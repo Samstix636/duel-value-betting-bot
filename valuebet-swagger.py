@@ -141,7 +141,7 @@ async def main():
         raise ValueError("Missing ODDS_API_KEY in environment variables")
     
     monitor = ValueBetMonitor(api_key=api_key,
-                              bookmakers=['Duel', 'Pinnacle'],
+                              bookmakers=['Duel'],
                               min_ev=0.05,  # 5%. Best practice as stated is threshold of 3-5%
                               interval_seconds=5)
 
