@@ -1,49 +1,44 @@
-61624190-Team Total Home-away-Duel-2.5,100.94,Team Total Home,Duel,2.32,1.58,,61624190,FC Barcelona,Athletic Bilbao,Football,Spain - LaLiga
-61624190-Spread-away-Duel--1.25,102.77,Spread,Duel,1.87,1.93,,61624190,FC Barcelona,Athletic Bilbao,Football,Spain - LaLiga
+id,ev,market_name,bookmaker,bookmaker_odds_home,bookmaker_odds_away,bookmaker_odds_draw,event_id,event_home,event_away,event_sport,event_league
+63472131-Totals HT-home-Duel-0.5,101.04,Totals HT,Duel,1.45,2.44,,63472131,AO Kavala 1965,Kampaniakos,Football,Greece - Super League 2
+63472131-Team Total Away-away-Duel-0.5,118.35,Team Total Away,Duel,1.40,2.60,,63472131,AO Kavala 1965,Kampaniakos,Football,Greece - Super League 2
+63472131-Spread-home-Duel--1.5,114.69,Spread,Duel,4.30,1.16,,63472131,AO Kavala 1965,Kampaniakos,Football,Greece - Super League 2
+63472131-ML-home-Duel,110.86,ML,Duel,2.04,3.85,2.80,63472131,AO Kavala 1965,Kampaniakos,Football,Greece - Super League 2
+64484703-Spread-away-Duel--1,105.01,Spread,Duel,1.89,1.76,,64484703,Shabab Al Ahli Dubai,Al-Nasr Dubai CSC,Football,United Arab Emirates - Pro League Cup
+64484703-Team Total Away-home-Duel-0.5,101.86,Team Total Away,Duel,1.50,2.30,,64484703,Shabab Al Ahli Dubai,Al-Nasr Dubai CSC,Football,United Arab Emirates - Pro League Cup
+64484703-Totals-home-Duel-2.5,103.26,Totals,Duel,1.80,1.84,,64484703,Shabab Al Ahli Dubai,Al-Nasr Dubai CSC,Football,United Arab Emirates - Pro League Cup
+56524275-Totals-home-Duel-2.5,101.35,Totals,Duel,1.59,2.14,,56524275,FC Rosengaard Malmo,Linkopings FC,Football,Sweden - Damallsvenskan
+56524275-ML-away-Duel,107.16,ML,Duel,1.46,5.80,4.20,56524275,FC Rosengaard Malmo,Linkopings FC,Football,Sweden - Damallsvenskan
+58315587-ML-home-Duel,100.19,ML,Duel,1.52,6.80,3.85,58315587,Criciuma EC SC,Botafogo FC SP,Football,Brazil - Brasileiro Serie B
+63325931-ML-home-Duel,108.48,ML,Duel,2.80,2.18,3.55,63325931,Muaither SC,Al Kharaitiyat SC,Football,Qatar - QSL Cup
+58315593-Spread-away-Duel-0.5,100.46,Spread,Duel,1.87,1.89,,58315593,Ferroviaria Araraquara SP,CA Paranaense PR,Football,Brazil - Brasileiro Serie B
+58315593-ML-away-Duel,102.07,ML,Duel,4.10,1.91,3.30,58315593,Ferroviaria Araraquara SP,CA Paranaense PR,Football,Brazil - Brasileiro Serie B
+56418733-ML-away-Duel,100.74,ML,Duel,9.60,1.39,4.80,56418733,Albania,England,Football,"International - WC Qualification, UEFA"
+64375743-Totals-away-Duel-2.5,100.18,Totals,Duel,1.70,2.10,,64375743,Finland,Andorra,Football,International - Int. Friendly Games
+61624190-Team Total Home-away-Duel-2.5,101.86,Team Total Home,Duel,2.32,1.58,,61624190,FC Barcelona,Athletic Bilbao,Football,Spain - LaLiga
+61624190-Spread-away-Duel--1.25,104.42,Spread,Duel,1.87,1.93,,61624190,FC Barcelona,Athletic Bilbao,Football,Spain - LaLiga
+56418653-Bookings Totals-away-Duel-3.5,108.84,Bookings Totals,Duel,1.79,1.85,,56418653,Israel,Moldova,Football,"International - WC Qualification, UEFA"
+56418735-Bookings Totals-away-Duel-3.5,120.55,Bookings Totals,Duel,1.47,2.40,,56418735,Serbia,Latvia,Football,"International - WC Qualification, UEFA"
+56418735-Team Total Home-away-Duel-2.5,101.09,Team Total Home,Duel,1.97,1.80,,56418735,Serbia,Latvia,Football,"International - WC Qualification, UEFA"
+64484713-Spread-away-Duel-0.5,101.07,Spread,Duel,1.57,2.18,,64484713,Al Jazira (UAE),Al Wasl FC,Football,United Arab Emirates - Pro League Cup
+64484713-ML-away-Duel,100.38,ML,Duel,3.15,2.16,3.15,64484713,Al Jazira (UAE),Al Wasl FC,Football,United Arab Emirates - Pro League Cup
+61214877-ML-draw-Duel,100.5,ML,Duel,2.10,3.45,2.94,61214877,Aurora FC,CSD Xelaju MC,Football,Guatemala - Liga Nacional. Apertura
+56418655-Spread-away-Duel-0.25,102.08,Spread,Duel,1.38,3.05,,56418655,Italy,Norway,Football,"International - WC Qualification, UEFA"
 56418733-Totals HT-away-Duel-1.5,103.68,Totals HT,Duel,2.52,1.50,,56418733,Albania,England,Football,"International - WC Qualification, UEFA"
-61624198-Totals-away-Duel-2.5,100.35,Totals,Duel,1.75,2.08,,61624198,Atletico Madrid,Real Oviedo,Football,Spain - LaLiga
-64484713-ML-away-Duel,102.99,ML,Duel,3.15,2.16,3.15,64484713,Al Jazira (UAE),Al Wasl FC,Football,United Arab Emirates - Pro League Cup
-61624198-Team Total Home-away-Duel-2.5,100.71,Team Total Home,Duel,2.32,1.58,,61624198,Atletico Madrid,Real Oviedo,Football,Spain - LaLiga
-61624198-Spread-away-Duel--1.5,102.31,Spread,Duel,1.82,1.99,,61624198,Atletico Madrid,Real Oviedo,Football,Spain - LaLiga
-58315593-Corners Spread-home-Duel-1.5,101.25,Corners Spread,Duel,1.79,1.87,,58315593,Ferroviaria Araraquara SP,CA Paranaense PR,Football,Brazil - Brasileiro Serie B
 61098861-Corners Spread-home-Duel--0.5,101.6,Corners Spread,Duel,1.88,1.78,,61098861,CA Central Cordoba SE,CA Banfield,Football,Argentina - Liga Profesional
-61098871-Corners Spread-home-Duel-0.5,102.59,Corners Spread,Duel,1.99,1.69,,61098871,Estudiantes de La Plata,Argentinos Juniors,Football,Argentina - Liga Profesional
-61098873-Corners Totals-away-Duel-8.5,102.81,Corners Totals,Duel,1.66,2.08,,61098873,Boca Juniors,CA Tigre,Football,Argentina - Liga Profesional
-61098873-Corners Spread-away-Duel--2.5,102.6,Corners Spread,Duel,1.76,1.91,,61098873,Boca Juniors,CA Tigre,Football,Argentina - Liga Profesional
 61098865-Corners Spread-home-Duel-0.5,101.05,Corners Spread,Duel,1.96,1.71,,61098865,Newell's Old Boys,Racing Club Avellaneda,Football,Argentina - Liga Profesional
 61623230-Corners Spread-home-Duel-0.5,101.76,Corners Spread,Duel,1.79,1.87,,61623230,CD Mirandes,Burgos CF,Football,Spain - LaLiga 2
-56418735-Bookings Totals-away-Duel-3.5,121.1,Bookings Totals,Duel,1.47,2.40,,56418735,Serbia,Latvia,Football,"International - WC Qualification, UEFA"
 56418655-Totals-home-Duel-2.75,105.1,Totals,Duel,2.02,1.79,,56418655,Italy,Norway,Football,"International - WC Qualification, UEFA"
 56418735-Spread-away-Duel--1.75,101.96,Spread,Duel,1.80,2.02,,56418735,Serbia,Latvia,Football,"International - WC Qualification, UEFA"
-56524275-ML-away-Duel,109.09,ML,Duel,1.46,5.80,4.20,56524275,FC Rosengaard Malmo,Linkopings FC,Football,Sweden - Damallsvenskan
-63472131-Team Total Away-away-Duel-0.5,106.89,Team Total Away,Duel,1.40,2.60,,63472131,AO Kavala 1965,Kampaniakos,Football,Greece - Super League 2
-63472131-ML-home-Duel,105.5,ML,Duel,2.18,3.50,2.78,63472131,AO Kavala 1965,Kampaniakos,Football,Greece - Super League 2
-64375743-Totals-away-Duel-2.5,101.41,Totals,Duel,1.70,2.10,,64375743,Finland,Andorra,Football,International - Int. Friendly Games
-56418573-Totals-away-Duel-2.25,103.76,Totals,Duel,2.02,1.79,,56418573,Hungary,Ireland,Football,"International - WC Qualification, UEFA"
-56418573-ML-draw-Duel,101.65,ML,Duel,1.97,4.10,3.30,56418573,Hungary,Ireland,Football,"International - WC Qualification, UEFA"
 61098865-Team Total Away-away-Duel-1.5,100.79,Team Total Away,Duel,2.22,1.60,,61098865,Newell's Old Boys,Racing Club Avellaneda,Football,Argentina - Liga Profesional
-56418735-Team Total Home-away-Duel-2.5,101.25,Team Total Home,Duel,1.97,1.80,,56418735,Serbia,Latvia,Football,"International - WC Qualification, UEFA"
 61098865-Team Total Home-home-Duel-0.5,101.82,Team Total Home,Duel,1.55,2.34,,61098865,Newell's Old Boys,Racing Club Avellaneda,Football,Argentina - Liga Profesional
 61098865-Spread-home-Duel-0.25,106.5,Spread,Duel,2.12,1.69,,61098865,Newell's Old Boys,Racing Club Avellaneda,Football,Argentina - Liga Profesional
-65319308-ML-home-Duel,106.94,ML,Duel,1.58,6.00,3.30,65319308,Niger Tornadoes FC,Katsina United FC,Football,Nigeria - Premier League
-61098873-ML-home-Duel,101.28,ML,Duel,1.74,5.60,3.20,61098873,Boca Juniors,CA Tigre,Football,Argentina - Liga Profesional
-63325931-ML-home-Duel,109.92,ML,Duel,2.80,2.18,3.55,63325931,Muaither SC,Al Kharaitiyat SC,Football,Qatar - QSL Cup
-64484703-Team Total Home-away-Duel-1.5,102.04,Team Total Home,Duel,1.56,2.18,,64484703,Shabab Al Ahli Dubai,Al-Nasr Dubai CSC,Football,United Arab Emirates - Pro League Cup
-64484703-Spread-away-Duel--1,105.88,Spread,Duel,1.89,1.76,,64484703,Shabab Al Ahli Dubai,Al-Nasr Dubai CSC,Football,United Arab Emirates - Pro League Cup
-61214877-ML-draw-Duel,100.53,ML,Duel,2.12,3.50,2.94,61214877,Aurora FC,CSD Xelaju MC,Football,Guatemala - Liga Nacional. Apertura
+65319308-ML-home-Duel,109.26,ML,Duel,1.58,6.00,3.30,65319308,Niger Tornadoes FC,Katsina United FC,Football,Nigeria - Premier League
 61720632-ML-home-Duel,101.23,ML,Duel,1.18,14.00,7.60,61720632,Galatasaray Istanbul,Genclerbirligi SK,Football,Turkiye - Super Lig
-58315593-ML-away-Duel,104.15,ML,Duel,3.85,2.02,3.25,58315593,Ferroviaria Araraquara SP,CA Paranaense PR,Football,Brazil - Brasileiro Serie B
-61688118-Team Total Away-away-Duel-0.5,111.81,Team Total Away,Duel,1.44,2.48,,61688118,CD Tenerife,Granada CF,Football,Spain - Primera Division Women
-61688118-Spread-home-Duel--1,143.85,Spread,Duel,2.66,1.39,,61688118,CD Tenerife,Granada CF,Football,Spain - Primera Division Women
-61688118-ML-home-Duel,120.15,ML,Duel,1.82,3.95,3.35,61688118,CD Tenerife,Granada CF,Football,Spain - Primera Division Women
-64484713-Spread-away-Duel-0.5,103.79,Spread,Duel,1.57,2.18,,64484713,Al Jazira (UAE),Al Wasl FC,Football,United Arab Emirates - Pro League Cup
-63325933-ML-home-Duel,101.47,ML,Duel,2.54,2.30,3.75,63325933,Umm-Salal SC,AL Wakrah SC,Football,Qatar - QSL Cup
-56418653-Bookings Totals-away-Duel-3.5,108.51,Bookings Totals,Duel,1.79,1.85,,56418653,Israel,Moldova,Football,"International - WC Qualification, UEFA"
 57585259-ML-away-Duel,100.28,ML,Duel,3.75,1.95,3.25,57585259,Blaublitz Akita,Vegalta Sendai,Football,Japan - J.League 2
 61731974-ML-draw-Duel,101.3,ML,Duel,3.30,2.20,3.10,61731974,Leixoes SC,GD Chaves,Football,Portugal - Liga Portugal 2
 56418575-Totals HT-home-Duel-1.5,108.25,Totals HT,Duel,1.84,1.92,,56418575,Portugal,Armenia,Football,"International - WC Qualification, UEFA"
 64888866-Totals-away-Duel-2.25,100.89,Totals,Duel,2.10,1.64,,64888866,Spartak Kostroma,Rodina Moscow,Football,Russia - 1. Liga
-61623224-Team Total Away-away-Duel-1.5,101.0,Team Total Away,Duel,2.38,1.53,,61623224,Cordoba CF,RC Deportivo La Coruna,Football,Spain - LaLiga 2
+61623224-Team Total Away-away-Duel-1.5,101.17,Team Total Away,Duel,2.38,1.53,,61623224,Cordoba CF,RC Deportivo La Coruna,Football,Spain - LaLiga 2
 56418341-Corners Totals-away-Duel-9.5,110.39,Corners Totals,Duel,1.77,1.94,,56418341,Sweden,Slovenia,Football,"International - WC Qualification, UEFA"
 56418475-Corners Spread-away-Duel--3.5,103.5,Corners Spread,Duel,1.68,2.02,,56418475,Northern Ireland,Luxembourg,Football,"International - WC Qualification, UEFA"
 56418821-Corners Spread-home-Duel-3.5,102.31,Corners Spread,Duel,2.06,1.65,,56418821,Montenegro,Croatia,Football,"International - WC Qualification, UEFA"
@@ -54,15 +49,14 @@
 61098869-Corners Spread-home-Duel--0.5,102.33,Corners Spread,Duel,2.02,1.68,,61098869,CA Belgrano de Cordoba,Union de Santa Fe,Football,Argentina - Liga Profesional
 61098885-Corners Spread-home-Duel--1.5,101.69,Corners Spread,Duel,1.92,1.75,,61098885,CA Platense,Gimnasia y Esgrima La Plata,Football,Argentina - Liga Profesional
 63325925-ML-home-Duel,123.75,ML,Duel,3.35,1.90,3.65,63325925,Al Mesaimeer,Al-Khor SC,Football,Qatar - QSL Cup
-58315587-Team Total Home-home-Duel-1.5,100.68,Team Total Home,Duel,1.84,1.88,,58315587,Criciuma EC SC,Botafogo FC SP,Football,Brazil - Brasileiro Serie B
-58315587-Spread-home-Duel--0.75,102.85,Spread,Duel,1.74,2.04,,58315587,Criciuma EC SC,Botafogo FC SP,Football,Brazil - Brasileiro Serie B
-56418575-Team Total Home-home-Duel-3.5,111.35,Team Total Home,Duel,2.10,1.70,,56418575,Portugal,Armenia,Football,"International - WC Qualification, UEFA"
+58315587-Team Total Home-home-Duel-1.5,102.22,Team Total Home,Duel,1.84,1.88,,58315587,Criciuma EC SC,Botafogo FC SP,Football,Brazil - Brasileiro Serie B
+58315587-Spread-home-Duel--0.75,104.44,Spread,Duel,1.74,2.04,,58315587,Criciuma EC SC,Botafogo FC SP,Football,Brazil - Brasileiro Serie B
+56418575-Team Total Home-home-Duel-3.5,112.46,Team Total Home,Duel,2.10,1.70,,56418575,Portugal,Armenia,Football,"International - WC Qualification, UEFA"
 61731974-Team Total Home-home-Duel-0.5,136.2,Team Total Home,Duel,2.08,1.65,,61731974,Leixoes SC,GD Chaves,Football,Portugal - Liga Portugal 2
 61688116-Spread-away-Duel--1.5,101.43,Spread,Duel,2.12,1.59,,61688116,Sevilla FC,Cdef Logrono,Football,Spain - Primera Division Women
 61688116-Totals HT-away-Duel-1.5,101.09,Totals HT,Duel,2.50,1.43,,61688116,Sevilla FC,Cdef Logrono,Football,Spain - Primera Division Women
-56418575-Spread-home-Duel--3.25,113.93,Spread,Duel,2.30,1.62,,56418575,Portugal,Armenia,Football,"International - WC Qualification, UEFA"
+56418575-Spread-home-Duel--3.25,114.45,Spread,Duel,2.30,1.62,,56418575,Portugal,Armenia,Football,"International - WC Qualification, UEFA"
 56418733-Team Total Home-away-Duel-0.5,110.4,Team Total Home,Duel,1.78,1.99,,56418733,Albania,England,Football,"International - WC Qualification, UEFA"
-56418733-ML-away-Duel,100.85,ML,Duel,9.60,1.39,4.80,56418733,Albania,England,Football,"International - WC Qualification, UEFA"
 56418695-ML-draw-Duel,102.02,ML,Duel,1.73,5.20,3.75,56418695,Wales,North Macedonia,Football,"International - WC Qualification, UEFA"
 61300751-Team Total Home-home-Duel-0.5,100.89,Team Total Home,Duel,1.50,2.52,,61300751,Wolverhampton Wanderers,Crystal Palace,Football,England - Premier League
 56418695-Totals HT-away-Duel-1.5,101.1,Totals HT,Duel,2.86,1.40,,56418695,Wales,North Macedonia,Football,"International - WC Qualification, UEFA"
@@ -75,13 +69,11 @@
 56418339-Team Total Away-home-Duel-1.5,100.31,Team Total Away,Duel,1.74,2.04,,56418339,Kosovo,Switzerland,Football,"International - WC Qualification, UEFA"
 56418339-Spread-away-Duel-1,105.0,Spread,Duel,1.74,2.10,,56418339,Kosovo,Switzerland,Football,"International - WC Qualification, UEFA"
 56418549-Spread-home-Duel-1,102.66,Spread,Duel,1.95,1.85,,56418549,Bulgaria,Georgia,Football,"International - WC Qualification, UEFA"
-56418613-Spread-away-Duel--1.25,101.75,Spread,Duel,1.72,2.12,,56418613,Austria,Bosnia and Herzegovina,Football,"International - WC Qualification, UEFA"
+56418613-Spread-away-Duel--1.25,102.27,Spread,Duel,1.72,2.12,,56418613,Austria,Bosnia and Herzegovina,Football,"International - WC Qualification, UEFA"
 61720634-ML-away-Duel,100.49,ML,Duel,6.20,1.54,4.20,61720634,Caykur Rizespor,Fenerbahce Istanbul,Football,Turkiye - Super Lig
-56418613-Totals HT-away-Duel-1.5,100.14,Totals HT,Duel,2.58,1.48,,56418613,Austria,Bosnia and Herzegovina,Football,"International - WC Qualification, UEFA"
 63472385-Team Total Away-away-Duel-0.5,105.06,Team Total Away,Duel,1.59,2.12,,63472385,Athens Kallithea FC,AO Egaleo 1931 PAE,Football,Greece - Super League 2
 63472385-Spread-home-Duel--0.5,110.95,Spread,Duel,1.74,1.91,,63472385,Athens Kallithea FC,AO Egaleo 1931 PAE,Football,Greece - Super League 2
 61688110-Team Total Home-home-Duel-0.5,104.2,Team Total Home,Duel,1.64,2.06,,61688110,SD Eibar,RCD Espanyol Barcelona,Football,Spain - Primera Division Women
-63684423-ML-home-Duel,100.2,ML,Duel,1.64,5.00,4.00,63684423,Auckland FC,Brisbane Roar FC,Football,Australia - A-League
 61624196-ML-away-Duel,100.62,ML,Duel,1.44,7.40,4.50,61624196,Villarreal CF,RCD Mallorca,Football,Spain - LaLiga
 56418475-Team Total Home-away-Duel-1.5,102.4,Team Total Home,Duel,1.46,2.64,,56418475,Northern Ireland,Luxembourg,Football,"International - WC Qualification, UEFA"
 56418821-Totals HT-away-Duel-1.5,100.37,Totals HT,Duel,2.32,1.58,,56418821,Montenegro,Croatia,Football,"International - WC Qualification, UEFA"
@@ -95,13 +87,11 @@
 61061071-ML-away-Duel,101.38,ML,Duel,1.33,11.00,4.80,61061071,Juventus Turin,Cagliari Calcio,Football,Italy - Serie A
 61300765-ML-away-Duel,119.41,ML,Duel,1.25,13.00,5.80,61300765,Manchester City,Leeds United,Football,England - Premier League
 61379807-Team Total Home-home-Duel-1.5,153.07,Team Total Home,Duel,4.30,1.17,,61379807,TOP Oss,RKC Waalwijk,Football,Netherlands - Eerste Divisie
-61513806-ML-home-Duel,100.42,ML,Duel,1.11,20.00,9.20,61513806,Bayern Munich,FC St. Pauli,Football,Germany - Bundesliga
-56418655-Spread-away-Duel-0.25,100.18,Spread,Duel,1.38,3.05,,56418655,Italy,Norway,Football,"International - WC Qualification, UEFA"
-61624190-Totals-away-Duel-3.25,100.11,Totals,Duel,2.08,1.75,,61624190,FC Barcelona,Athletic Bilbao,Football,Spain - LaLiga
-56524275-Totals-home-Duel-2.5,102.1,Totals,Duel,1.59,2.14,,56524275,FC Rosengaard Malmo,Linkopings FC,Football,Sweden - Damallsvenskan
-61688118-Spread-home-Duel--0.5,122.49,Spread,Duel,1.84,1.80,,61688118,CD Tenerife,Granada CF,Football,Spain - Primera Division Women
-62721383-Totals-home-Duel-3.5,102.91,Totals,Duel,1.95,1.71,,62721383,Afk Csikszereda Miercurea Ciuc,CS Gloria 2018 Bistrita-Nasaud,Football,"Romania - Superliga, Women"
-61489181-Totals-home-Duel-4.5,105.05,Totals,Duel,1.97,1.69,,61489181,Montrose FC,Glasgow City LFC,Football,"Scotland - Premier League, Women"
-63472131-Totals HT-home-Duel-0.5,100.92,Totals HT,Duel,1.45,2.44,,63472131,AO Kavala 1965,Kampaniakos,Football,Greece - Super League 2
-64484703-Totals-home-Duel-2.5,101.03,Totals,Duel,1.80,1.84,,64484703,Shabab Al Ahli Dubai,Al-Nasr Dubai CSC,Football,United Arab Emirates - Pro League Cup
+61513806-ML-home-Duel,100.42,ML,Duel,1.11,20.00,9.40,61513806,Bayern Munich,FC St. Pauli,Football,Germany - Bundesliga
+58315593-Corners Spread-home-Duel-1.5,101.25,Corners Spread,Duel,1.79,1.87,,58315593,Ferroviaria Araraquara SP,CA Paranaense PR,Football,Brazil - Brasileiro Serie B
 61098871-Corners Totals-away-Duel-8.5,101,Corners Totals,Duel,1.70,2.02,,61098871,Estudiantes de La Plata,Argentinos Juniors,Football,Argentina - Liga Profesional
+61098871-Corners Spread-home-Duel-0.5,103.46,Corners Spread,Duel,1.99,1.69,,61098871,Estudiantes de La Plata,Argentinos Juniors,Football,Argentina - Liga Profesional
+61098873-Corners Totals-away-Duel-8.5,103.26,Corners Totals,Duel,1.66,2.08,,61098873,Boca Juniors,CA Tigre,Football,Argentina - Liga Profesional
+61098873-Corners Spread-away-Duel--2.5,103.46,Corners Spread,Duel,1.76,1.91,,61098873,Boca Juniors,CA Tigre,Football,Argentina - Liga Profesional
+56418527-Corners Totals-home-Duel-9.5,103.82,Corners Totals,Duel,2.12,1.64,,56418527,Ukraine,Iceland,Football,"International - WC Qualification, UEFA"
+64484703-Team Total Home-away-Duel-1.5,100.4,Team Total Home,Duel,1.56,2.18,,64484703,Shabab Al Ahli Dubai,Al-Nasr Dubai CSC,Football,United Arab Emirates - Pro League Cup
