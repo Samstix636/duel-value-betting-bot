@@ -19,7 +19,29 @@ class ValueBetMonitor:
         self.min_ev = min_ev
         self.interval_seconds = interval_seconds
         self.is_running = False
-        self.seen_bets = [] 
+        self.seen_bets = []
+        self.markets = []
+
+    def set_markets_for_sport(self, sport: str):
+        # Set target markets based on sport
+        if sport == "tennis":
+            self.markets = ["ML", "Totals", "Spread"]
+        elif sport == "football":
+            self.markets = ["ML", "Spread", "Totals", "Totals HT"]
+        elif sport == "basketball":
+            self.markets = ["ML", "Spread", "Totals", "Team Totals"]
+        else:
+            self.markets = ["ML"]
+
+    def is_target_market(self, market_name: str) -> bool:
+        """Check if the market is one we're interested in"""
+        if not market_name:
+            return False
+        
+        market_lower = market_name.lower().strip()
+        
+        # Check for exact or partial matches (case-insensitive)
+        return any(target.lower() in market_lower for target in self.markets)
 
     async def fetch_valuebets_from_all_bookmakers(self) -> List[Dict]:
         # Fetch value bets from all bookmakers in parallel
@@ -61,25 +83,73 @@ class ValueBetMonitor:
         try:
             all_bets = await self.fetch_valuebets_from_all_bookmakers()
 
-            # Filter bets
-            filtered = [bet for bet in all_bets if bet.get('expectedValue', 0) >= self.min_ev and bet.get('event', {}).get('sport', '').lower() in ('football', 'tennis')]
+            # Filter bets by sport, EV, AND market (sport-specific)
+            filtered = []
+            for bet in all_bets:
+                ev = bet.get('expectedValue', 0)
+                sport = bet.get('event', {}).get('sport', '').lower()
+                market_name = bet.get('market', {}).get('name', '')
+                
+                # Check EV threshold
+                if ev < self.min_ev:
+                    continue
+                
+                # Check sport 
+                if sport not in ('football', 'tennis'):
+                    continue
+                
+                # Set markets based on sport and check if this bet's market is valid
+                self.set_markets_for_sport(sport)
+                if self.is_target_market(market_name):
+                    filtered.append(bet)
+            
+            # Log filtered out markets for debugging
+            filtered_out = {}
+            for bet in all_bets:
+                ev = bet.get('expectedValue', 0)
+                sport = bet.get('event', {}).get('sport', '').lower()
+                market_name = bet.get('market', {}).get('name', 'Unknown')
+                
+                if (ev >= self.min_ev 
+                    and sport in ('football', 'tennis', 'basketball')):
+                    self.set_markets_for_sport(sport)
+                    if not self.is_target_market(market_name):
+                        if sport not in filtered_out:
+                            filtered_out[sport] = set()
+                        filtered_out[sport].add(market_name)
+            
+            if filtered_out:
+                for sport, markets in filtered_out.items():
+                    logging.debug(f"Filtered out {sport} markets: {markets}")
             
             for bet in filtered:
+                logging.info(f"----------------------------{bet}--------------------------")
+
+                betside = bet.get("betSide") or bet.get("betside")
+
+                # Map betside to bookmakerOdds key
+                odds_key_map = {"home": "home", "away": "away", "draw": "draw", "over": "over", "under": "under"}
+                selected_key = odds_key_map.get(betside)
+
+                # Safely pick selected odds
+                selected_odds = None
+                if selected_key:
+                    selected_odds = bet.get("bookmakerOdds", {}).get(selected_key)
+
                 value_bet_data = {
-                    'id': bet.get('id', None),
-                    'ev': round(bet.get('expectedValue', 0), 2),
-                    'market_name': bet.get('market', {}).get('name', 'Unknown'),
-                    'bookmaker': bet.get('bookmaker', 'Unknown'),
-                    'bookmaker_odds_home': bet.get('bookmakerOdds', {}).get('home', None),
-                    'bookmaker_odds_away': bet.get('bookmakerOdds', {}).get('away', None),
-                    'bookmaker_odds_draw': bet.get('bookmakerOdds', {}).get('draw', None),
-                    'event_id': bet.get('eventId', None),
-                    'event_home': bet.get('event', {}).get('home', 'Unknown'),
-                    'event_away': bet.get('event', {}).get('away', 'Unknown'),
-                    'event_sport': bet.get('event', {}).get('sport', 'Unknown'),
-                    'event_league': bet.get('event', {}).get('league', 'Unknown')
+                    "id": bet.get("id"),
+                    "ev": round(bet.get("expectedValue", 0), 2),
+                    "market_name": bet.get("market", {}).get("name", "Unknown"),
+                    "bookmaker": bet.get("bookmaker", "Unknown"),
+                    "betside": betside,
+                    "selected_odds": selected_odds,
+                    "event_id": bet.get("eventId"),
+                    "event_home": bet.get("event", {}).get("home", "Unknown"),
+                    "event_away": bet.get("event", {}).get("away", "Unknown"),
+                    "event_sport": bet.get("event", {}).get("sport", "Unknown"),
+                    "event_league": bet.get("event", {}).get("league", "Unknown"),
                 }
-                
+
                 key = f"{value_bet_data['id']}-{value_bet_data['event_id']}-{value_bet_data['market_name']}"
                 
                 duplicate_found = False
@@ -91,14 +161,13 @@ class ValueBetMonitor:
 
                     if same_id:
                         duplicate_found = True
-                        for side in ['home', 'away', 'draw']:
-                            odds_field = f'bookmaker_odds_{side}'
-                            if seen_bet[odds_field] != value_bet_data[odds_field]:
-                                seen_bet[odds_field] = value_bet_data[odds_field]
-                                odds_update = True
-                        if odds_update:
-                            logging.info(f"[@ {value_bet_data['bookmaker']}] Duplicate found and odds updated \n{json.dumps(value_bet_data, indent=4)}\n ")
-                        break  # stop looping, we found the duplicate
+                        if seen_bet['selected_odds'] != value_bet_data['selected_odds']:
+                            odds_update = True
+                            seen_bet['selected_odds'] = value_bet_data['selected_odds']
+                            break
+                        else:
+                            return # exit
+
                     
                 if not duplicate_found:
                     self.seen_bets.append(value_bet_data)
@@ -107,6 +176,10 @@ class ValueBetMonitor:
                     # Save to CSV
                     # Note that if it was a previous value bet data with updated ods, it won't be able to update the CSV with the new odds.
                     self.save_valuebet_to_csv(value_bet_data)
+
+                if duplicate_found and odds_update:
+                    logging.info(f"[@ {value_bet_data['bookmaker']}] Duplicate found and odds updated \n{json.dumps(value_bet_data, indent=4)}\n ")
+
 
         except Exception as e:
             logging.error(f"Error during polling: {e}")
@@ -120,6 +193,7 @@ class ValueBetMonitor:
 
         logging.info(f"Starting monitor: {', '.join(self.bookmakers)}")
         logging.info(f"Min EV: {self.min_ev * 100:.2f}% | Interval: {self.interval_seconds}s")
+        logging.info("Markets will be set dynamically based on sport")
         
         self.is_running = True
         await self.process_and_poll() 
@@ -142,7 +216,7 @@ async def main():
     
     monitor = ValueBetMonitor(api_key=api_key,
                               bookmakers=['Duel'],
-                              min_ev=0.05,  # 5%. Best practice as stated is threshold of 3-5%
+                              min_ev=0.01,  # 1%. Best practice as stated is threshold of 3-5%
                               interval_seconds=5)
 
     try:
