@@ -70,7 +70,7 @@ class ValueBetMonitor:
 
     async def process_and_poll(self):
         try:
-            logging.info("Polling for value bets...") #pulse
+            # logging.info("Polling for value bets...") #pulse
 
             all_bets = await self.fetch_valuebets_from_all_bookmakers()
 
@@ -117,9 +117,9 @@ class ValueBetMonitor:
 
                 filtered.append(bet)
             
-            if not filtered:
-                logging.info("Poll complete - No new value bets found")  # Completion pulse
-                return
+            # if not filtered:
+            #     logging.info("Poll complete - No new value bets found")  # Completion pulse
+            #     return
         
             for bet in filtered:
                 # logging.info(f'------------{bet}-------')
