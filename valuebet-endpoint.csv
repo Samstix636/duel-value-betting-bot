@@ -1,0 +1,13 @@
+sport,league,home,away,market_name,odds,ev,betside,hdp,event_id
+Football,Netherlands - Eerste Divisie,TOP Oss,RKC Waalwijk,Spread,1.89,1.44,away,0.5,61379807
+Football,Peru - Liga 1,Atletico Grau,Sporting Cristal,Team Total Home,4.90,56.7,over,1.5,65608766
+Football,Saudi Arabia - Saudi Pro League,Al-Ittihad Club,Al-Riyadh SC,ML,1.27,1.15,home,,64055441
+Football,Germany - Bundesliga,1. FC Cologne,Eintracht Frankfurt,Team Total Home,4.50,96.82,over,1.5,61513804
+Football,Slovakia - Slovensky Pohar,FTC Filakovo,AS Trencin,Team Total Home,2.70,16.21,under,0.5,64882000
+Football,Netherlands - Eerste Divisie,TOP Oss,RKC Waalwijk,Team Total Home,3.80,32.51,over,1.5,61379807
+Football,Brazil - Brasileiro Serie B,Amazonas FC AM,Coritiba FC PR,Team Total Home,2.02,20.34,over,0.5,58315609
+Football,Northern Ireland - Premiership,Cliftonville FC,Coleraine FC,Team Total Home,1.77,12.55,over,0.5,61447523
+Football,Germany - Bundesliga,VfL Wolfsburg,Bayer Leverkusen,Team Total Home,4.70,76.0,over,1.5,61513796
+Football,Italy - Serie A,Udinese Calcio,Bologna FC,Team Total Home,2.02,29.05,over,0.5,61061037
+Football,Thailand - Thai League 1,Ratchaburi FC,BG Pathum United,ML,3.50,1.08,away,,63160781
+Football,Russia - Premier League,FC Orenburg,FC Baltika Kaliningrad,Team Total Home,2.04,32.6,over,0.5,61952202
