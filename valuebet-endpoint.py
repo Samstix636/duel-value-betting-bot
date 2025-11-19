@@ -20,7 +20,7 @@ class ValueBetMonitor:
         self.interval_seconds = interval_seconds
         self.is_running = False
         self.seen_bets = []
-        self.markets = ["Spread", "ML", "Totals", "Totals HT", "Asian Handicap", "Team Total home", "Team Total away", "Team Total home HT", "Team Total away HT", "ML HT", "Spread HT"]
+        self.markets = ["Spread", "ML", "Totals", "Totals HT", "Asian Handicap", "Asian Handicap HT", "Team Total home", "Team Total away", "Team Total home HT", "Team Total away HT", "ML HT", "Spread HT"]
 
 
     def is_target_market(self, market_name: str) -> bool:
