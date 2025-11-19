@@ -149,12 +149,11 @@ class ValueBetMonitor:
 
                 hdp_markets = ("spread", "asian handicap", "spread ht", "asian handicap ht")
 
-                if bet.get("market", {}).get("name", "Unknown").lower() in hdp_markets:  # Added ()
+                if bet.get("market", {}).get("name", "Unknown").lower() in hdp_markets:
                     value_bet_data['hdp'] = bet.get('bookmakerOdds', {}).get('hdp')
                 else:
                     value_bet_data['hdp'] = None
-                    
-
+                        
                 key = bet.get("eventId", 0)
                 duplicate_found = False
 
@@ -187,9 +186,7 @@ class ValueBetMonitor:
             return
 
         logging.info(f"Starting monitor: {', '.join(self.bookmakers)}")
-        logging.info(f"Target sports: Football, Tennis")
-        logging.info("Markets will be set dynamically based on sport\n")
-        
+        logging.info(f"Target sports: Football, Tennis")        
         self.is_running = True
         await self.process_and_poll() 
         
