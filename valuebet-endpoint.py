@@ -70,7 +70,7 @@ class ValueBetMonitor:
 
     async def process_and_poll(self):
         try:
-            logging.info("🔄 Polling for value bets...") #pulse
+            logging.info("Polling for value bets...") #pulse
 
             all_bets = await self.fetch_valuebets_from_all_bookmakers()
 
