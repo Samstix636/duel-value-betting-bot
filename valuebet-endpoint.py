@@ -103,8 +103,8 @@ class ValueBetMonitor:
                     logging.info(f"Skipped: Market '{market_name}' not in target markets")
                     continue
 
-                totals_market = ("totals", "totals ht", "team total home", "team total away", "team total home ht", "team total away ht")
-                if market_name.lower() in totals_market:
+                totals_markets = ("totals", "totals ht", "team total home", "team total away", "team total home ht", "team total away ht")
+                if market_name.lower() in totals_markets:
                     odds = bet["bookmakerOdds"]
                     odds["over"] = odds.pop("home")
                     odds["under"] = odds.pop("away")
@@ -145,28 +145,25 @@ class ValueBetMonitor:
                     "odds": odds,
                     "ev": ev,
                     "betside": betside,
-                    "hdp": bet.get('bookmakerOdds', {}).get('hdp'),
                 }
 
-                event_id = bet.get("eventId", 0)
-                key = f"{event_id}-{value_bet_data['market_name']}"
-                
+                hdp_markets = ("spread", "asian handicap", "spread ht", "asian handicap ht")
+
+                if bet.get("market", {}).get("name", "Unknown").lower() in hdp_markets:  # Added ()
+                    value_bet_data['hdp'] = bet.get('bookmakerOdds', {}).get('hdp')
+                else:
+                    value_bet_data['hdp'] = None
+                    
+
+                key = bet.get("eventId", 0)
                 duplicate_found = False
-                odds_update = False
 
                 for seen_bet in self.seen_bets:
-                    seen_event_id = seen_bet.get("event_id", 0)
-                    seen_bet_key = f"{seen_event_id}-{seen_bet['market_name']}"
+                    seen_bet_key = seen_bet.get("event_id", 0)
                     same_id = key == seen_bet_key
 
                     if same_id:
                         duplicate_found = True
-                        if seen_bet['odds'] != value_bet_data['odds']:
-                            odds_update = True
-                            seen_bet['odds'] = value_bet_data['odds']
-                            break
-                        else:
-                            break 
                     
                 if not duplicate_found:
                     logging.info(f"🔔Value bet found @ {bet.get('bookmaker', 'Unknown')}\n{json.dumps(value_bet_data, indent=4)}\n")
@@ -174,10 +171,9 @@ class ValueBetMonitor:
                     self.seen_bets.append(value_bet_data)
                     
                     # Save to CSV
+                    value_bet_data['id'] = bet.get("id")
+                    value_bet_data['bookmaker'] = bet.get("bookmaker", "Unknown"),
                     self.save_valuebet_to_csv(value_bet_data)
-
-                if duplicate_found and odds_update:
-                    logging.info(f"[@ {value_bet_data['bookmaker']}] Duplicate found and odds updated \n{json.dumps(value_bet_data, indent=4)}\n ")
 
         except Exception as e:
             logging.error(f"Error during polling: {e}")
