@@ -9,3 +9,4 @@ ENV/
 
 duplicate.py
 allbets.csv
+.DS_Store
