@@ -1,0 +1,157 @@
+2025-11-20 23:45:13 [INFO] websocket: Websocket connected
+2025-11-20 23:45:13 [INFO] OddsFinder: WebSocket connected
+2025-11-20 23:49:21 [ERROR] OddsFinder: WebSocket Error: ping/pong timed out
+2025-11-20 23:49:21 [ERROR] websocket: ping/pong timed out - goodbye
+2025-11-20 23:49:34 [INFO] OddsFinder: WebSocket closed
+2025-11-20 23:49:36 [INFO] websocket: Websocket connected
+2025-11-20 23:49:36 [INFO] OddsFinder: WebSocket connected
+2025-11-20 23:50:42 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:42 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:42 [INFO] OddsFinder: Skipping game. -4.58 is below minimum value 1.0)
+2025-11-20 23:50:42 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:42 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:42 [INFO] OddsFinder: Skipping game. -4.91 is below minimum value 1.0)
+2025-11-20 23:50:42 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:42 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:42 [INFO] OddsFinder: Skipping game. -3.09 is below minimum value 1.0)
+2025-11-20 23:50:42 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:42 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:42 [INFO] OddsFinder: Skipping game. -3.52 is below minimum value 1.0)
+2025-11-20 23:50:42 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:42 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:42 [INFO] OddsFinder: Skipping game. -3.33 is below minimum value 1.0)
+2025-11-20 23:50:42 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:42 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:42 [INFO] OddsFinder: Skipping game. -3.57 is below minimum value 1.0)
+2025-11-20 23:50:42 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:42 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:42 [INFO] OddsFinder: Skipping game. -5.29 is below minimum value 1.0)
+2025-11-20 23:50:42 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:42 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:42 [INFO] OddsFinder: Skipping game. -3.28 is below minimum value 1.0)
+2025-11-20 23:50:42 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:42 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:42 [INFO] OddsFinder: Skipping game. -5.03 is below minimum value 1.0)
+2025-11-20 23:50:42 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:42 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:42 [INFO] OddsFinder: Skipping game. -5.03 is below minimum value 1.0)
+2025-11-20 23:50:42 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:42 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:42 [INFO] OddsFinder: Skipping game. -3.44 is below minimum value 1.0)
+2025-11-20 23:50:42 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:42 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:42 [INFO] OddsFinder: Skipping game. -3.48 is below minimum value 1.0)
+2025-11-20 23:50:42 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:42 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:42 [INFO] OddsFinder: Skipping game. -3.38 is below minimum value 1.0)
+2025-11-20 23:50:42 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:42 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:42 [INFO] OddsFinder: Skipping game. -3.19 is below minimum value 1.0)
+2025-11-20 23:50:43 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:43 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:43 [INFO] OddsFinder: Skipping game. -7.87 is below minimum value 1.0)
+2025-11-20 23:50:43 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:43 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:43 [INFO] OddsFinder: [Tennis] Value bet found for Duel with value: 2.89%
+2025-11-20 23:50:43 [INFO] OddsFinder: [Tennis] Value bet pair found
+----- VALUE BET SIDE (duel) -----
+{
+  "home_name": "Duckworth, James",
+  "away_name": "Sweeny, Dane",
+  "league": "Challenger - ATP Challenger Sydney, Australia Men Singles",
+  "market_name": "ML",
+  "selection": "away",
+  "odds": 2.85,
+  "sportsbook": "duel",
+  "sport": "Tennis",
+  "hdp": null
+}
+----- CORRESPONDING PINNACLE SIDE -----
+{
+  "home_name": "Duckworth, James",
+  "away_name": "Sweeny, Dane",
+  "league": "Challenger - ATP Challenger Sydney, Australia Men Singles",
+  "market_name": "ML",
+  "selection": "away",
+  "odds": 2.77,
+  "sportsbook": "pinnacle",
+  "sport": "Tennis",
+  "hdp": null
+}
+------------------------------------------
+2025-11-20 23:50:43 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:43 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:43 [INFO] OddsFinder: Skipping game. -5.19 is below minimum value 1.0)
+2025-11-20 23:50:43 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:43 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:43 [INFO] OddsFinder: Skipping game. -4.9 is below minimum value 1.0)
+2025-11-20 23:50:43 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:43 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:43 [INFO] OddsFinder: Skipping game. -3.88 is below minimum value 1.0)
+2025-11-20 23:50:43 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:43 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:43 [INFO] OddsFinder: Skipping game. -3.65 is below minimum value 1.0)
+2025-11-20 23:50:43 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:43 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:43 [INFO] OddsFinder: Skipping game. -4.03 is below minimum value 1.0)
+2025-11-20 23:50:43 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:43 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:43 [INFO] OddsFinder: Skipping game. -3.88 is below minimum value 1.0)
+2025-11-20 23:50:47 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:47 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:47 [INFO] OddsFinder: Skipping game. -2.61 is below minimum value 1.0)
+2025-11-20 23:50:47 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:47 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:47 [INFO] OddsFinder: Skipping game. -0.56 is below minimum value 1.0)
+2025-11-20 23:50:47 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:47 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:47 [INFO] OddsFinder: Skipping game. -10.47 is below minimum value 1.0)
+2025-11-20 23:50:47 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:47 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:47 [INFO] OddsFinder: Skipping game. -2.82 is below minimum value 1.0)
+2025-11-20 23:50:47 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:47 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:47 [INFO] OddsFinder: Skipping game. -6.73 is below minimum value 1.0)
+2025-11-20 23:50:47 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:50:47 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:50:47 [INFO] OddsFinder: Skipping game. -0.23 is below minimum value 1.0)
+2025-11-20 23:51:48 [ERROR] OddsFinder: WebSocket Error: ping/pong timed out
+2025-11-20 23:51:48 [ERROR] websocket: ping/pong timed out - goodbye
+2025-11-20 23:51:51 [INFO] OddsFinder: WebSocket closed
+2025-11-20 23:51:54 [INFO] websocket: Websocket connected
+2025-11-20 23:51:54 [INFO] OddsFinder: WebSocket connected
+2025-11-20 23:52:03 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:52:03 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:52:04 [INFO] OddsFinder: [Football] Value bet found for Duel with value: 1.55%
+2025-11-20 23:52:04 [INFO] OddsFinder: [Football] Value bet pair found
+----- VALUE BET SIDE (duel) -----
+{
+  "home_name": "NK Slaven Belupo",
+  "away_name": "HNK Vukovar 1991",
+  "league": "Croatia - HNL",
+  "market_name": "Totals HT",
+  "selection": "over",
+  "odds": 1.38,
+  "sportsbook": "duel",
+  "sport": "Football",
+  "hdp": 0.5
+}
+----- CORRESPONDING PINNACLE SIDE -----
+{
+  "home_name": "NK Slaven Belupo",
+  "away_name": "HNK Vukovar 1991",
+  "league": "Croatia - HNL",
+  "market_name": "Totals HT",
+  "selection": "over",
+  "odds": 1.359,
+  "sportsbook": "pinnacle",
+  "sport": "Football",
+  "hdp": 0.5
+}
+------------------------------------------
+2025-11-20 23:53:22 [INFO] OddsFinder: ==================================================================
+2025-11-20 23:53:22 [INFO] OddsFinder: Found both Duel and Pinnacle odds pair....
+2025-11-20 23:53:22 [INFO] OddsFinder: Skipping game. -2.12 is below minimum value 1.0)
+2025-11-20 23:56:30 [ERROR] OddsFinder: WebSocket Error: 
+2025-11-20 23:56:31 [INFO] OddsFinder: WebSocket closed
+2025-11-20 23:56:31 [INFO] websocket: tearing down on exception 
