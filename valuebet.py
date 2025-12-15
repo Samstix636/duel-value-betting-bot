@@ -66,7 +66,7 @@ class OddsFinder:
         self.worksheet = worksheet
         self.duel_client = duel_client
         self.bookmakers = ["Duel", "Pinnacle"]
-        self.markets = ["Spread", "ML", "Totals", "Totals HT",
+        self.markets = ["Spread", "ML", "Totals", "Totals HT", "3-Way Result",
                        "Asian Handicap HT", "Team Total Home", "Team Total Away", 
                        "Team Total Home HT", "Team Total Away HT", "ML HT", "Spread HT",
                        "Totals (Games)", "Spread (Games)", "Totals 1st Set (Games)", "Spread 1st Set (Games)", "ML 1st Set"]
@@ -399,6 +399,7 @@ class OddsFinder:
                 try:
                     bet_response = self.duel_client.place_bet_sync(
                         duel_event_id=duel_event_id,
+                        sport=sport,
                         market_name=duel_entry.get("market"),
                         selection=duel_entry.get("selection"),
                         hdp=duel_entry.get("hdp"),
@@ -417,6 +418,7 @@ class OddsFinder:
                         # Retry placing bet with new token
                         bet_response = self.duel_client.place_bet(
                             duel_event_id=duel_event_id,
+                            sport=sport,
                             market_name=duel_entry.get("market"),
                             selection=duel_entry.get("selection"),
                             hdp=duel_entry.get("hdp"),

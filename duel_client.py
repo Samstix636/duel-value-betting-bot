@@ -893,6 +893,7 @@ class DuelClient:
     async def place_bet(
         self,
         duel_event_id: str,
+        sport: str,
         market_name: str,
         selection: str,
         hdp: Optional[float],
@@ -933,7 +934,7 @@ class DuelClient:
         
         logger.info(f"Placing bet for event_id: {duel_event_id}, market_name: {market_name}, selection: {selection}, hdp: {hdp}, odds: {odds}, balance: ${self.balance:.2f}")
         
-        if market_name == "ML":
+        if market_name == "3-Way Result":
             market_id = "1"
             if selection == "home":
                 selection_id = "1"
@@ -941,6 +942,20 @@ class DuelClient:
                 selection_id = "3"
             elif selection == "draw":
                 selection_id = "2"
+
+        elif market_name == "ML":
+            if sport.lower() in ['ice hockey', 'soccer']:
+                market_id = "406"
+            elif sport.lower() in ["volleyball", "tennis"]:
+                market_id = "186"
+            else:
+                market_id = "219"
+
+            if selection == "home":
+                selection_id = "4"
+            elif selection == "away":
+                selection_id = "5"
+            
         elif market_name == "Spread":
             market_id = "16"
             specifier = f"hcp={hdp}"
@@ -1042,6 +1057,7 @@ class DuelClient:
     def place_bet_sync(
         self,
         duel_event_id: str,
+        sport: str,
         market_name: str,
         selection: str,
         hdp: Optional[float],
@@ -1064,13 +1080,13 @@ class DuelClient:
         if self._loop and self._loop.is_running():
             # If loop is running, schedule the coroutine in the existing loop
             future = asyncio.run_coroutine_threadsafe(
-                self.place_bet(duel_event_id, market_name, selection, hdp, odds),
+                self.place_bet(duel_event_id, sport, market_name, selection, hdp, odds),
                 self._loop
             )
             return future.result(timeout=60)  # 60 second timeout for bet placement
         else:
             # If no loop or loop not running, create a new one
-            return asyncio.run(self.place_bet(duel_event_id, market_name, selection, hdp, odds))
+            return asyncio.run(self.place_bet(duel_event_id, sport, market_name, selection, hdp, odds))
     
     def get_bet_odds(self, duel_event_id: str) -> Optional[float]:
         """
