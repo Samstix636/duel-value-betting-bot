@@ -147,18 +147,13 @@ class ValueBetFinder:
                         if oddsapi_event_slug is None or bolt_event_slug is None:
                             continue
 
-                        sport2, is_match = events_match(oddsapi_event_slug, bolt_event_slug, oddsapi_sport_slug, threshold=70)
-
-                        if is_match:
+                        if events_match(oddsapi_event_slug, bolt_event_slug, oddsapi_sport_slug, threshold=70):
                             matches_found += 1
                             logger.info(f"\nMATCH FOUND!\n"
-                                        f"  OddsAPI ID: {oddsapi_event.get('id')}\n"
-                                        f"  BoltOdds ID: {bolt_event.get('id')}\n"
+                                        f"  OddsAPI pre-normalized ID: {oddsapi_event.get('id')}\n"
+                                        f"  BoltOdds pre-normalized ID: {bolt_event.get('id')}\n"
                                         f"  Event: {oddsapi_event.get('home_team')} vs {oddsapi_event.get('away_team')}\n"
-                                        f"  League: {oddsapi_event.get('league')}"
                                     )
-                            bolt_event['sport'] = sport2
-
 
                             # Compare odds for this matched event
                             self.compare_odds(oddsapi_event, bolt_event)
@@ -175,37 +170,31 @@ class ValueBetFinder:
     
     def compare_odds(self, oddsapi_event, bolt_event):
         """Compare odds between matched events to find valuebets"""
-
-
         logger.info(f"Crosscheck this - Matching pair found\n"
+                    f"Pre-normalized data\n"
                     f"----- (Duel) -----\n"
                     f"{oddsapi_event}\n"
                     f"----- Pinnacle -----\n"
                     f"{bolt_event}\n"
                     f"------------------------------------------")
 
-        
         # Get details from oddsappi_event (Duel) & bolt_event (Pinnacle)
         oddsapi_market = oddsapi_event.get('market')
         bolt_market = bolt_event.get('market')
 
         oddsapi_price = oddsapi_event.get('odds_decimal')
         bolt_price = bolt_event.get('odds_decimal')
-
-        # # Calculate value
-        # if oddsapi_price and bolt_price:
-        #     value = calculate_value(oddsapi_price, bolt_price) #value returned in percentage
-
-        # if float(value) < MIN_VALUE:
-        #     logger.info(f"Skipping game. {value} is below minimum value {MIN_VALUE})")
-        #     return None
+        # Calculate value
+        if oddsapi_price and bolt_price:
+            value = calculate_value(oddsapi_price, bolt_price) #value returned in percentage
+        if float(value) < MIN_VALUE:
+            logger.info(f"Skipping game. {value} is below minimum value {MIN_VALUE})")
+            return None
 
         oddsapi_hdp = oddsapi_event.get('hdp') # e.g 0.5
         bolt_line = bolt_event.get('outcome_line') # e.g 0.25
 
-
         oddsapi_selection = oddsapi_event.get('selection') #e.g home, over, under, away, draw
-        
         bolt_over_under = bolt_event.get("outcome_over_under")  # e.g., "O" or "U"
         bolt_target = bolt_event.get("outcome_target")        # e.g., Away name, Team name or "Draw"
 
@@ -215,7 +204,6 @@ class ValueBetFinder:
         if bolt_over_under is not None:
             # Map "O"/"U" to "over"/"under"
             over_under_map = {"o": "over", "u": "under"}
-            over_under = over_under_map.get(bolt_over_under.lower(), bolt_over_under)
             bolt_selection = over_under_map.get(bolt_over_under.lower())
         elif bolt_target:
             # Map team name to "home", "away", or "draw"
@@ -250,14 +238,6 @@ class ValueBetFinder:
             if mapped_odds_market.lower() != mapped_bolt_market.lower():
                 logger.info(f"Markets don't match: {mapped_odds_market} vs {mapped_bolt_market}")
                 return
-            
-        # Calculate value
-        if oddsapi_price and bolt_price:
-            value = calculate_value(oddsapi_price, bolt_price) #value returned in percentage
-
-        if float(value) < MIN_VALUE:
-            logger.info(f"Skipping game. {value} is below minimum value {MIN_VALUE})")
-            return None
         
         logger.info(f"[Value bet pair found\n"
                     f"----- VALUE BET SIDE (Duel) -----\n"
@@ -265,9 +245,6 @@ class ValueBetFinder:
                     f"----- CORRESPONDING PINNACLE SIDE -----\n"
                     f"{bolt_event}\n"
                     f"------------------------------------------")
-        
-        
-
         
 if __name__ == "__main__":
     try:

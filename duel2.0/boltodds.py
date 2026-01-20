@@ -4,7 +4,7 @@ import time
 import logging
 import threading
 from pprint import pprint
-from helper import american_to_decimal, est_to_utc
+from helper import american_to_decimal, est_to_utc, get_sport_from_league, normalize_league
 from dotenv import load_dotenv
 import os
 load_dotenv()
@@ -135,11 +135,23 @@ class BoltOddsStreamClient:
         when_utc = est_to_utc(info.get("when"))
 
         for _, outcome_data in outcomes.items():
-            id = f"{inner_data.get('sport')}|{inner_data.get('home_team')}|{inner_data.get('away_team')}|{when_utc}"
+            bolt_league = inner_data.get('sport')
+            clean_bolt_league = normalize_league(bolt_league) 
+            sport = get_sport_from_league(clean_bolt_league)
+
+            logger.info(
+                        "Parsed sport data | bolt_league=%s | clean_bolt_league=%s | sport=%s",
+                        bolt_league,
+                        clean_bolt_league,
+                        sport,
+                    )
+
+            id = f"{sport}|{inner_data.get('home_team')}|{inner_data.get('away_team')}|{when_utc}"
             american_odds = outcome_data.get("odds")
 
             record = {
                 "id": id.lower(),
+                "sport": sport,
                 "league": inner_data.get("sport"),
                 "sportsbook": "Pinnacle",
                 "home_team": inner_data.get("home_team"),

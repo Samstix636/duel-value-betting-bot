@@ -68,9 +68,10 @@ class OddsAPIStreamClient:
         # Filter for events in next 24 hours and collect IDs
         for event in self.alloddsapievent:
             date_str = event.get("date")
+            # logger.info(event.get("date"))
             if date_str and is_less_than_24_hours_away(date_str):
                 self.upcoming_event_ids.append(event['id'])
-        # logger.info(self.upcoming_event_ids)
+        logger.info(self.upcoming_event_ids)
 
     def start_periodic_refresh(self, interval_hours=2):
         """Start a background thread that refreshes events list"""
@@ -144,11 +145,13 @@ class OddsAPIStreamClient:
 
                 event_id = data.get("id")
                 sportsbook = data.get("bookie")
+
+                # logger.info(event_id)
                 if sportsbook not in self.bookmakers:
                     return
-                if event_id not in self.upcoming_event_ids:
-                    # logger.info(f"event id {event_id} for bookmaker {data.get("bookie")} not in the next 24 hours")
-                    continue
+                # if event_id not in self.upcoming_event_ids:
+                #     # logger.info(f"event id {event_id} for bookmaker {data.get("bookie")} not in the next 24 hours")
+                #     continue
                 if data.get("type") not in ("created", "updated"):
                     return
                 
@@ -197,7 +200,7 @@ class OddsAPIStreamClient:
                         return 
 
                     record = {
-                        "id": f"{league}|{home}|{away}|{date}".lower(),
+                        "id": f"{sport}|{home}|{away}|{date}".lower(),
                         "sportsbook": "Duel", 
                         "market": market_name,
                         "selection": key, 

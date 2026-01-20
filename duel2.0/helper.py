@@ -116,6 +116,7 @@ league_map = {
     "wta": "womens-tennis-association",
     "ncaa football": "national-collegiate-athletic-association-football",
     "primeira-liga":"portugal-liga-portugal",
+    "champions-league": "international-clubs-uefa-champions-league"
 }
 
 team_map= {
@@ -200,36 +201,29 @@ def events_match(slug1: str, slug2: str, oddsapi_sport_slug: str, threshold: int
     # skip if we already know this pair failed
     if (slug1, slug2) in failed_matches:
         logger.info("Skipping already seen failed match set")
-        return None, False
+        return False
     
     # slug 1 is from odds api, slug 2 is from bolt odds
     cleaned_slug1 = clean_slug(slug1)
     cleaned_slug2 = clean_slug(slug2)
     
     try:
-        league1, home1, away1, date1 = cleaned_slug1.split("|", 3)
-        league2, home2, away2, date2 = cleaned_slug2.split("|", 3)
+        sport1, home1, away1, date1 = cleaned_slug1.split("|", 3)
+        sport2, home2, away2, date2 = cleaned_slug2.split("|", 3)
     except ValueError:
-        return None, False
+        return False
     
     if date1 != date2:
-        return None, False # Dates don't match exactly → no need to continue
+        return False # Dates don't match exactly → no need to continue
     
     if not is_less_than_24_hours_away(date1):
-        return None, False
+        return False
     
-    cleanleague1 = normalize_league(league1)
-    cleanleague2 = normalize_league(league2) 
-    
-    sport1 = oddsapi_sport_slug
-    sport2 = get_sport_from_league(cleanleague2) #boltodds
-    logger.info(f"Here are the sports - odds api:{sport1}, boltodds:{sport2} and the bolt odds league is {cleanleague2}")
-
     if not sport1 or not sport2:
-        return None, False
+        return False
     
     if sport1.lower() != sport2.lower():
-        return None, False  # different sports → impossible match
+        return False  # different sports → impossible match
 
     cleanhome1 = normalize_team(home1)
     cleanhome2 = normalize_team(home2)
@@ -240,7 +234,7 @@ def events_match(slug1: str, slug2: str, oddsapi_sport_slug: str, threshold: int
     away_score = fuzz.token_sort_ratio(cleanaway1, cleanaway2)
 
     if home_score < threshold or away_score < threshold:
-        return None, False
+        return False
     
     normalized_slug1 = f"{sport1}|{cleanhome1}|{cleanaway1}|{date1}"
     normalized_slug2 = f"{sport2}|{cleanhome2}|{cleanaway2}|{date2}"
@@ -257,15 +251,9 @@ def events_match(slug1: str, slug2: str, oddsapi_sport_slug: str, threshold: int
     is_match = (home_score >= threshold and away_score >= threshold)
 
     if not is_match:
-        return None, False
-    
-    logger.info(
-        f"Leagues:\n"
-        f"  Unclean → 1: {league1}, 2: {league2}\n"
-        f"  Clean   → 1: {cleanleague1}, 2: {cleanleague2}"
-    )
+        return False
 
-    return sport2, True
+    return True
 
 market_map = {
     # BoltOdds : OddsAPI
@@ -331,6 +319,7 @@ def get_sport_from_league(league: str) -> str | None:
             "cfl",
             "nfl-preseason",
             "national-collegiate-athletic-association-football",
+            
         },
         "soccer": {
             "mls",
@@ -338,9 +327,12 @@ def get_sport_from_league(league: str) -> str | None:
             "la-liga",
             "ligue-1",
             "serie-a",
-            "epl",
-            "major-league-soccer",
-            "england-premier-league",
+            "epl", "pl", "spain-laliga", "laliga", "germany-bundesliga",
+            "efl championship", "english-football-league-championship", 
+            "primeira-liga",
+            "major-league-soccer", "portugal-liga-portugal"
+            "england-premier-league", "champions-league", 
+            "international-clubs-uefa-champions-league",
         },
     }
 
