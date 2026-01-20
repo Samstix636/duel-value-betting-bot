@@ -49,43 +49,6 @@ class BoltOddsStreamClient:
         self.thread.start()
         return self.thread
     
-    def get_sport_from_league(league: str) -> str | None:
-        league = league.strip().lower()
-
-        sport_map = {
-            "hockey": {
-                "nhl", "ncaa hockey"
-            },
-            "basketball": {
-                "nba", "ncaab", "ncaab (w)", "wnba",
-                "nba summer", "nba preseason", "euroleague"
-            },
-            "baseball": {
-                "mlb", "ncaa baseball"
-            },
-            "tennis": {
-                "grand slams", "atp", "wta",
-                "atp & wta tours", "challenger tournaments", "itf events"
-            },
-            "football": {
-                "nfl", "ncaa football", "cfl", "nfl preseason"
-            },
-            "combat": {
-                "ufc", "boxing"
-            },
-            "soccer": {
-                "mls", "bundesliga", "la liga",
-                "ligue 1", "serie a", "epl"
-            },
-        }
-
-        for sport, leagues in sport_map.items():
-            if league in leagues:
-                return sport
-
-        return None
-
-
     def start(self):
         """Start the WebSocket client"""
         logger.info("WebSocket connection is starting")

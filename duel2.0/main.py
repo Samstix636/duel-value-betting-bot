@@ -177,7 +177,7 @@ class ValueBetFinder:
         """Compare odds between matched events to find valuebets"""
 
 
-        logger.info(f"Crosscheck this - Matching bet pair found\n"
+        logger.info(f"Crosscheck this - Matching pair found\n"
                     f"----- (Duel) -----\n"
                     f"{oddsapi_event}\n"
                     f"----- Pinnacle -----\n"
@@ -212,9 +212,6 @@ class ValueBetFinder:
         bolt_home = bolt_event.get('home_team', '').strip()
         bolt_away = bolt_event.get('away_team', '').strip()
 
-        # now outcome_target isn't "Home", "Away", "Draw", it's either the actual home team name or away team name, so you have to check and then replace 
-        # bolt target with either home away or draw(draw will be written there)
-
         if bolt_over_under is not None:
             # Map "O"/"U" to "over"/"under"
             over_under_map = {"o": "over", "u": "under"}
@@ -244,7 +241,6 @@ class ValueBetFinder:
                 logger.info(f"Selections don't match: {oddsapi_selection} vs {bolt_selection}")
                 return
             
-        
         # Map market names 
         mapped_odds_market = map_market_name(oddsapi_market)
         mapped_bolt_market = map_market_name(bolt_market)
