@@ -139,12 +139,12 @@ class BoltOddsStreamClient:
             clean_bolt_league = normalize_league(bolt_league) 
             sport = get_sport_from_league(clean_bolt_league)
 
-            logger.info(
-                        "Parsed sport data | bolt_league=%s | clean_bolt_league=%s | sport=%s",
-                        bolt_league,
-                        clean_bolt_league,
-                        sport,
-                    )
+            # logger.info(
+            #             "Parsed sport data | bolt_league=%s | clean_bolt_league=%s | sport=%s",
+            #             bolt_league,
+            #             clean_bolt_league,
+            #             sport,
+            #         )
 
             id = f"{sport}|{inner_data.get('home_team')}|{inner_data.get('away_team')}|{when_utc}"
             american_odds = outcome_data.get("odds")

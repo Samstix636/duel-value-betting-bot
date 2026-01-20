@@ -71,7 +71,7 @@ class OddsAPIStreamClient:
             # logger.info(event.get("date"))
             if date_str and is_less_than_24_hours_away(date_str):
                 self.upcoming_event_ids.append(event['id'])
-        logger.info(self.upcoming_event_ids)
+        # logger.info(self.upcoming_event_ids)
 
     def start_periodic_refresh(self, interval_hours=2):
         """Start a background thread that refreshes events list"""
