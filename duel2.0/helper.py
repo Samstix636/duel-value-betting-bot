@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from zoneinfo import ZoneInfo
 from thefuzz import fuzz
 from rapidfuzz import process, fuzz as rf_fuzz
 import re
@@ -33,14 +32,35 @@ def est_to_utc(time_str: str) -> str:
     # Parse input string
     dt_naive = datetime.strptime(time_str, "%Y-%m-%d, %I:%M %p")
     
-    # Localize to EST
-    dt_est = dt_naive.replace(tzinfo=ZoneInfo("America/New_York"))
+    # Localize to EST/EDT (America/New_York handles both)
+    est_tz = pytz.timezone("America/New_York")
+    dt_est = est_tz.localize(dt_naive)
     
     # Convert to UTC
-    dt_utc = dt_est.astimezone(ZoneInfo("UTC"))
+    dt_utc = dt_est.astimezone(pytz.UTC)
     
     # Format in ISO 8601 style with 'Z'
     return dt_utc.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+def is_within_minute(time_str, minute_val = 2):
+    """Returns True if the given UTC time string is within the last minute from now, else False."""
+    
+
+    # Accepts both with and without milliseconds
+    time_formats = ["%Y-%m-%dT%H:%M:%S.%fZ", "%Y-%m-%dT%H:%M:%SZ"]
+    given_time = None
+    for fmt in time_formats:
+        try:
+            given_time = datetime.strptime(time_str, fmt).replace(tzinfo=pytz.UTC)
+            break
+        except ValueError:
+            continue
+    if given_time is None:
+        raise ValueError(f"Time string {time_str} not in recognized ISO format")
+    now = datetime.now(pytz.UTC)
+    delta = now - given_time
+    return timedelta(0) <= delta <= timedelta(minutes=minute_val)
+
 
 def calculate_value(slower_odds, sharp_odds):
     value = (float(slower_odds) - float(sharp_odds))*100/(float(sharp_odds))
@@ -69,13 +89,21 @@ def is_less_than_24_hours_away(time_str: str) -> bool:
     current_time = datetime.now(pytz.UTC)
     time_difference = given_time - current_time
 
-    return timedelta(0) < time_difference <= timedelta(hours=24)
+    return timedelta(0) < time_difference <= timedelta(hours=48)
+
+def is_event_started(time_str: str) -> bool:
+    try:
+        event_time = datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=pytz.UTC)
+    except Exception:
+        return False
+    now = datetime.now(pytz.UTC)
+    return event_time <= now
 
 def clean_slug(slug):
     slug = slug.lower()
     
     # Remove special characters, keep only alphanumeric, spaces, and pipes
-    slug = re.sub(r'[^a-z0-9\s\-|]', '', slug)
+    slug = re.sub(r'[^a-z0-9\s\-|:.]', '', slug)
     
     # Replace multiple spaces with single space
     slug = re.sub(r'\s+', ' ', slug)
@@ -199,13 +227,15 @@ failed_matches: set[tuple[str, str]] = set()
 
 def events_match(slug1: str, slug2: str, oddsapi_sport_slug: str, threshold: int = 65) -> tuple[str | None, bool]:
     # skip if we already know this pair failed
-    if (slug1, slug2) in failed_matches:
-        logger.info("Skipping already seen failed match set")
-        return False
+    # if (slug1, slug2) in failed_matches:
+    #     logger.info("Skipping already seen failed match set")
+    #     return False
     
     # slug 1 is from odds api, slug 2 is from bolt odds
     cleaned_slug1 = clean_slug(slug1)
     cleaned_slug2 = clean_slug(slug2)
+    is_match = False
+    
     
     try:
         sport1, home1, away1, date1 = cleaned_slug1.split("|", 3)
@@ -213,17 +243,14 @@ def events_match(slug1: str, slug2: str, oddsapi_sport_slug: str, threshold: int
     except ValueError:
         return False
     
-    if date1 != date2:
-        return False # Dates don't match exactly → no need to continue
-    
-    if not is_less_than_24_hours_away(date1):
+    # if not sport1 or not sport2:
+        logger.info(f"Sports don't match: {sport1} vs {sport2}")
         return False
     
-    if not sport1 or not sport2:
-        return False
     
-    if sport1.lower() != sport2.lower():
-        return False  # different sports → impossible match
+
+    # else:
+    #     return False  # different sports → impossible match
 
     cleanhome1 = normalize_team(home1)
     cleanhome2 = normalize_team(home2)
@@ -233,58 +260,153 @@ def events_match(slug1: str, slug2: str, oddsapi_sport_slug: str, threshold: int
     cleanaway2 = normalize_team(away2)
     away_score = fuzz.token_sort_ratio(cleanaway1, cleanaway2)
 
-    if home_score < threshold or away_score < threshold:
-        return False
+    # if home_score < threshold or away_score < threshold:
+    #     logger.info(f"Scores don't match: Home Score - {home_score} vs Away Score - {away_score}")
+    #     return False
     
     normalized_slug1 = f"{sport1}|{cleanhome1}|{cleanaway1}|{date1}"
     normalized_slug2 = f"{sport2}|{cleanhome2}|{cleanaway2}|{date2}"
 
-    if home_score >= 50 or away_score >= 50:
-        logger.info("Odds comparison:\n"
-        "  Odds API slug: %s\n"
-        "  Bolts Odds slug: %s\n"
-        "  Odds API normalized slug: %s\n"
-        "  Bolts Odds normalized slug: %s\n"
-        "  Scores -> home: %s, away: %s", 
-        slug1, slug2, normalized_slug1, normalized_slug2, home_score, away_score)
+    if home_score >= 65 and away_score >= 65:
+        is_match = True
+        logger.info(f"Team matched: {cleanhome1} vs {cleanhome2} = {home_score} and {cleanaway1} vs {cleanaway2} = {away_score}")
+        # print(f"Team matched: {cleanhome1} vs {cleanhome2} = {home_score} and {cleanaway1} vs {cleanaway2} = {away_score}")
+    else:
+        return False
 
-    is_match = (home_score >= threshold and away_score >= threshold)
+
+    if not is_within_15_minutes(date1.lower(), date2.lower()):
+        logger.info(f"Starting times are far apart: {date1} vs {date2}")
+        return False # Dates don't match exactly → no need to continue
+
+    # if sport1.lower() == sport2.lower():
+    #     logger.info(f"Sports matched: {sport1} vs {sport2}")
 
     if not is_match:
         return False
 
     return True
 
+def is_within_15_minutes(time_str1, time_str2):
+    """
+    Compare two ISO8601 UTC time strings and check if they are within 15 minutes of each other.
+
+    Args:
+        time_str1 (str): Time string in format "2026-01-25t11:30:00z"
+        time_str2 (str): Time string in format "2026-01-25t11:30:00z"
+
+    Returns:
+        bool: True if times are within 15 minutes either way, False otherwise
+    """
+    from datetime import datetime, timezone
+
+    def parse_utc(dtstr):
+        # Some iso strings are lower/upper 't'
+        # Accept with or without 'Z' at end, always treat as UTC
+        s = dtstr.strip()
+        if "t" in s:
+            s = s.replace("t", "T")
+        if s.lower().endswith("z"):
+            s = s[:-1]
+        try:
+            return datetime.strptime(s, "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc)
+        except ValueError:
+            try:
+                # Try parsing with milliseconds if present
+                return datetime.strptime(s, "%Y-%m-%dT%H:%M:%S.%f").replace(tzinfo=timezone.utc)
+            except Exception:
+                raise
+
+    try:
+        d1 = parse_utc(time_str1)
+        d2 = parse_utc(time_str2)
+    except Exception as e:
+        # If parsing fails, consider not within 15 minutes
+        return False
+
+    delta = abs((d1 - d2).total_seconds())
+    return delta <= 15 * 60
+
+def deduplicate_by_key(dict_list, key):
+    """
+    Deduplicate a list of dictionaries by a specific key.
+    Keeps the first occurrence of each unique key value.
+    
+    Args:
+        dict_list: List of dictionaries
+        key: Key to deduplicate on
+        
+    Returns:
+        List of unique dictionaries
+    """
+    seen = {}
+    result = []
+    for item in dict_list:
+        key_value = item.get(key)
+        if key_value not in seen:
+            seen[key_value] = True
+            result.append(item)
+    return result
+
+
 market_map = {
-    # BoltOdds : OddsAPI
+    # BoltOdds/odds api market : normalized mapped market name
     "Moneyline": "ML",
+    "ML": "ML",
+    "3 Way": "1x2",
+    "3-Way Result": "1x2",
+
     "Spread": "Spread",
+    "Asian Spread": "Spread",
+    "Asian Handicap": "Spread",
+
     "1st Half Spread": "Spread HT",
+    "Spread HT": "Spread HT",
+    "1st Half Asian Spread": "Spread HT",
+    "Asian Handicap HT": "Spread HT",
+
     "1st Half Moneyline": "ML HT",
+    "ML HT": "ML HT",
+
     "Total Goals": "Totals",
-    "1st Half Total Goals": "Totals HT",
-    "1st Half Asian Spread": "Asian Handicap HT",
-    "Asian Spread": "Asian Handicap",
-    "3 Way": "ML",
+    "Totals": "Totals",
+    "Total Points": "Totals",
     "Total": "Totals",
-    "1st Half Total": "Totals HT"
+    
+    "1st Half Total Goals": "Totals HT",
+    "1st Half Total Points": "Totals HT",
+    "1st Half Total": "Totals HT",
+    "Totals HT": "Totals HT"
+    
+    
 }
 
 def map_market_name(raw_market):
-    return market_map.get(raw_market, raw_market)
+    # logger.info(f"Mapping market name: {raw_market}")
+    return market_map.get(raw_market, None)
+
+
+def transpose_duel_market_name(market_name, sport):
+    if market_name == "First Set Winner":
+        return 'ML 1st Set'
+    elif sport == "football" and market_name == "ML":
+        return "3 Way"
+    else:
+        return market_name
 
 
 def get_sport_from_league(league: str) -> str | None:
-    league = league.strip().lower()
+    league = league.strip().lower().replace(" ", "-")
+    # logger.info(f"searching for League: {league}")
 
     sport_map = {
-        "hockey": {
+        "ice-hockey": [
             "nhl",
             "ncaa-hockey",
             "national-hockey-league",
             "national-collegiate-athletic-association-hockey",
-        },
-        "basketball": {
+        ],
+        "basketball": [
             "nba",
             "ncaab",
             "ncaab-w",
@@ -296,44 +418,35 @@ def get_sport_from_league(league: str) -> str | None:
             "nba-preseason",
             "euroleague",
             "national-basketball-association",
-        },
-        "baseball": {
+        ],
+        "baseball": [
             "mlb",
             "ncaa-baseball",
             "major-league-baseball",
             "national-collegiate-athletic-association-baseball",
-        },
-        "tennis": {
-            "grand-slams",
-            "atp",
-            "wta",
-            "association-of-tennis-professionals",
-            "womens-tennis-association",
-            "atp-wta-tours",
-            "challenger-tournaments",
-            "itf-events",
-        },
-        "football": {
+        ],
+        "american-football": [
             "nfl",
             "ncaa-football",
             "cfl",
             "nfl-preseason",
             "national-collegiate-athletic-association-football",
             
-        },
-        "soccer": {
+        ],
+        "football": [
             "mls",
             "bundesliga",
             "la-liga",
             "ligue-1",
             "serie-a",
             "epl", "pl", "spain-laliga", "laliga", "germany-bundesliga",
-            "efl championship", "english-football-league-championship", 
+            "efl-championship", "english-football-league-championship", 
             "primeira-liga",
-            "major-league-soccer", "portugal-liga-portugal"
+            "major-league-soccer", "portugal-liga-portugal",
             "england-premier-league", "champions-league", 
             "international-clubs-uefa-champions-league",
-        },
+            "world-cup",
+        ],
     }
 
     for sport, leagues in sport_map.items():
@@ -341,3 +454,4 @@ def get_sport_from_league(league: str) -> str | None:
             return sport
 
     return None
+    

@@ -412,25 +412,10 @@ class OddsFinder:
                         settled_odds, balance = self.duel_client.get_bet_odds(duel_event_id)
                     elif bet_response.get('error') == "expired_token":
                         logger.error(f"Token expired, attempting to refresh token")
-                        # Try to refresh token
-                        self.duel_client.get_auth_token(force_refresh=True)
-                        play_notification_sound("alarm.wav", async_play=False)
-                        # Retry placing bet with new token
-                        bet_response = self.duel_client.place_bet(
-                            duel_event_id=duel_event_id,
-                            sport=sport,
-                            market_name=duel_entry.get("market"),
-                            selection=duel_entry.get("selection"),
-                            hdp=duel_entry.get("hdp"),
-                            odds=duel_entry.get("price")
-                        )
-                        if bet_response.get('error') == []:
-                            settled_odds, balance = self.duel_client.get_bet_odds(duel_event_id)
+                        input("Token seems to have expired. Refresh and restart the program.")
                     else:
                         logger.error(f"Error placing bet: {bet_response}")
-                        for record in self.odds_store:
-                            if record['uid'] == duel_entry.get("uid"):
-                                self.odds_store.remove(record)
+                        
                         
                         return None
                 except Exception as e:

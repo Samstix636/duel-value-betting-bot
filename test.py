@@ -1,137 +1,188 @@
-import os
-import dotenv
+import websocket
+import json
+import time
 import requests
+import logging
 from pprint import pprint
-from datetime import datetime, timedelta
-import pytz
-from typing import Optional, Dict, Any
-dotenv.load_dotenv()
 
-def get_event_odds(event_id):
-    """
-    Fetch event odds from the API.
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    filename="test_log.log")      
+logger = logging.getLogger("TestLogger")
+
+class WebSocketClient:
+    def __init__(self, uri):
+        self.uri = uri
+        self.ws = None
+        self.subscribed = False
+        self.should_reconnect = True
+        
+    def on_open(self, ws):
+        """Called when the WebSocket connection is established"""
+        print("WebSocket connection opened")
+        # Subscription message will be sent after receiving ack_message
+        # The server should send an ack_message first, which we'll handle in on_message
+        
+    def on_message(self, ws, message):
+        """Called when a message is received from the server"""
+        try:
+            data = json.loads(message)
+            
+            # Handle ack message (first message after connection)
+            if not self.subscribed:
+                print(f"Ack message: {message}")
+                # Send the subscription message after receiving ack
+                subscribe_message = {
+                    "action": "subscribe",
+                    "filters": {
+                        # "sports": ["NBA", "MLB", "Wimbledon (M)"],
+                        "sportsbooks": ["pinnacle"],
+                        # "games": ["San Francisco Giants vs Philadelphia Phillies, 2025-07-07, 09", "Corinthians vs Bragantino, 2025-07-13, 06"],
+                        "markets": ["Moneyline", "Spread", "1st Half Spread", "1st Half Moneyline" "Total Goals", "1st Half Asian Spread","1st Half Total Goals", 
+                                    "3 Way", "Asian Spread", 'Total', '1st Half Total', '1st Half Total', '1st Half Total Points', 'Total Points']
+                    }
+                }
+                ws.send(json.dumps(subscribe_message))
+                self.subscribed = True
+                return
+            
+            # Handle ping messages
+            if data.get('action') == 'ping':
+                return
+            
+            # Handle different message types
+            action = data.get('action')
+            
+            # sent upon connection, initial state of odds subbed to
+            if action == 'initial_state':
+                self.handle_initial_state(data)
+            
+            # entire game odds update
+            elif action == 'game_update':
+                self.handle_game_update(data)
+            
+            # games done
+            elif action == 'game_removed':
+                self.handle_game_removed(data)
+            
+            # game added
+            elif action == 'game_added':
+                self.handle_game_added(data)
+            
+            # singular line odd update
+            # if odds r None or '', no odds available for line i.e its deleted, suspended etc
+            elif action == 'line_update':
+                self.handle_line_update(data)
+            
+            # all games from a specific sport and book have been cleared
+            elif action == 'sport_clear':
+                self.handle_sport_clear(data)
+            
+            # all games for this book have been cleared
+            elif action == 'book_clear':
+                self.handle_book_clear(data)
+                
+        except json.JSONDecodeError as e:
+            print(f"Error parsing JSON: {e}")
+        except Exception as e:
+            print(f"Error processing message: {e}")
     
-    Args:
-        event_id: The event ID to fetch odds for
+    def on_error(self, ws, error):
+        """Called when an error occurs"""
+        print(f"WebSocket error: {error}")
     
-    Returns:
-        Dictionary containing event and bookmaker odds data
-    """
-    url = "https://api.odds-api.io/v3/odds"
-    params = {
-        "apiKey": os.getenv("ODDS_API_KEY"),
-        "eventId": event_id,
-        "bookmakers": 'Pinnacle,Duel',
-        # 'sport': 'Handball',
-        # 'since': int((datetime.now(pytz.UTC) - timedelta(seconds=30)).timestamp())
-    }
-    response = requests.get(url, params=params)
+    def on_close(self, ws, close_status_code, close_msg):
+        """Called when the WebSocket connection is closed"""
+        print(f"Connection closed — status: {close_status_code}, reason: {close_msg}")
+        self.subscribed = False
+        
+        if self.should_reconnect:
+            print("Reconnecting...")
+            time.sleep(5)
+            self.connect()
     
-    response.raise_for_status()
-    return response.json()
+    def handle_initial_state(self, data):
+        """Handle initial_state action"""
+        pass
+    
+    def handle_game_update(self, data):
+        """Handle game_update action"""
+        logger.info("--------------------------------Game updated--------------------------------")
+        logger.info(data)
+    
+    def handle_game_removed(self, data):
+        """Handle game_removed action"""
+        pass
+    
+    def handle_game_added(self, data):
+        """Handle game_added action"""
+        logger.info("--------------------------------Game added--------------------------------")
+        logger.info(data)
+    
+    def handle_line_update(self, data):
+        """Handle line_update action"""
+        logger.info("Line updated")
+        logger.info(data)
+    
+    def handle_sport_clear(self, data):
+        """Handle sport_clear action"""
+        pass
+    
+    def handle_book_clear(self, data):
+        """Handle book_clear action"""
+        pass
+    
+    def connect(self):
+        """Connect to the WebSocket server"""
+        self.ws = websocket.WebSocketApp(
+            self.uri,
+            on_open=self.on_open,
+            on_message=self.on_message,
+            on_error=self.on_error,
+            on_close=self.on_close
+        )
+        # run_forever() blocks, so run it in a separate thread or use it directly
+        self.ws.run_forever()
+    
+    def start(self):
+        """Start the WebSocket client"""
+        self.connect()
+    
+    def stop(self):
+        """Stop the WebSocket client"""
+        self.should_reconnect = False
+        if self.ws:
+            self.ws.close()
 
 
-def get_odds_from_data(
-    data: Dict[str, Any],
-    bookmaker_name: str,
-    market_name: str,
-    selection: str,
-    hdp_line: Optional[float] = None
-) -> Optional[float]:
-    """
-    Extract odds from the API response data structure.
+def run_client():
+    """Main function to run the WebSocket client"""
+    uri = "wss://spro.agency/api?key=a65f44a6-99e9-4c70-8b12-0aab385b449e"
+    client = WebSocketClient(uri)
     
-    Args:
-        data: The API response dictionary containing event and bookmaker data
-        bookmaker_name: Name of the bookmaker (e.g., 'Duel', 'Pinnacle')
-        market_name: Name of the market (e.g., 'ML', 'Totals')
-        selection: The selection to get odds for (e.g., 'home', 'away', 'draw', 'over', 'under')
-        hdp_line: Optional handicap/totals line (required for markets like Totals, Spread)
-    
-    Returns:
-        The odds value as a float, or None if not found
-    
-    Example:
-        >>> data = get_event_odds("61957400")
-        >>> odds = get_odds_from_data(data, 'Duel', 'ML', 'home')
-        >>> print(odds)  # 1.80
-        >>> odds = get_odds_from_data(data, 'Duel', 'Totals', 'over', hdp_line=59.5)
-        >>> print(odds)  # 1.78
-    """
     try:
-        # Check if bookmakers key exists
-        if 'bookmakers' not in data:
-            return None
-        
-        # Get the bookmaker data
-        bookmaker_data = data['bookmakers'].get(bookmaker_name)
-        if not bookmaker_data:
-            return None
-        
-        # Find the market with matching name
-        market = None
-        for m in bookmaker_data:
-            if m.get('name') == market_name:
-                market = m
-                break
-        
-        if not market:
-            return None
-        
-        # Get the odds list
-        odds_list = market.get('odds', [])
-        if not odds_list:
-            return None
-        
-        # Find the appropriate odds entry
-        odds_entry = None
-        
-        if hdp_line is not None:
-            # For markets with lines (Totals, Spread, etc.), find matching hdp
-            for entry in odds_list:
-                if entry.get('hdp') == hdp_line:
-                    odds_entry = entry
-                    break
-        else:
-            # For markets without lines (ML), use the first entry
-            odds_entry = odds_list[0] if odds_list else None
-        
-        if not odds_entry:
-            return None
-        
-        # Get the odds value for the selection
-        odds_value = odds_entry.get(selection)
-        if odds_value is None:
-            return None
-        
-        # Convert to float and return
-        return float(odds_value)
-    
-    except (KeyError, ValueError, TypeError) as e:
-        print(f"Error extracting odds: {e}")
-        return None
+        client.start()
+    except KeyboardInterrupt:
+        print("\nStopping WebSocket client...")
+        client.stop()
 
+
+
+
+def fetch_and_print_markets():
+    url = "https://spro.agency/api/get_markets?key=a65f44a6-99e9-4c70-8b12-0aab385b449e&sportsbooks=pinnacle"
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        pprint(data)
+    except Exception as e:
+        print(f"Failed to fetch markets: {e}")
+
+# Example call
 
 if __name__ == "__main__":
-    # Test the function
-    data = get_event_odds("62888053")
-    pprint(data)
-    
-    # Example usage of get_odds_from_data
-    # print("\n" + "="*80)
-    # print("Testing get_odds_from_data function:")
-    # print("="*80)
-    
-    # # Example 1: Get ML odds (no hdp_line needed)
-    # duel_home_odds = get_odds_from_data(data, 'Duel', 'ML', 'home')
-    # print(f"\nDuel ML Home odds: {duel_home_odds}")
-    
-    # # duel_away_odds = get_odds_from_data(data, 'Duel', 'ML', 'away')
-    # # print(f"Duel ML Away odds: {duel_away_odds}")
-    
-    # # Example 2: Get Totals odds (hdp_line required)
-    # duel_totals_over = get_odds_from_data(data, 'Duel', 'Totals', 'over', hdp_line=59.5)
-    # print(f"\nDuel Totals Over 59.5 odds: {duel_totals_over}")
-    
-    # pinnacle_totals_under = get_odds_from_data(data, 'Pinnacle', 'Totals', 'under', hdp_line=59.5)
-    # print(f"Pinnacle Totals Under 59.5 odds: {pinnacle_totals_under}")
+    run_client()
+    # fetch_and_print_markets()

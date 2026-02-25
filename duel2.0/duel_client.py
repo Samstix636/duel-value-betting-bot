@@ -13,43 +13,26 @@ from pathlib import Path
 from playwright.async_api import async_playwright, Page, BrowserContext
 import dotenv
 from aioconsole import ainput
-
+import math
 dotenv.load_dotenv()
 
 logger = logging.getLogger("DuelClient")
-
-user_agents = [
-    "Mozilla/5.0 (Windows NT 5.1; rv:40.0) Gecko/20100101 Firefox/40.0",
-    "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.85 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/600.6.3 (KHTML, like Gecko) Version/8.0.6 Safari/600.6.3",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/600.5.17 (KHTML, like Gecko) Version/8.0.5 Safari/600.5.17",
-    "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0",
-    "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 8_4_1 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) Version/8.0 Mobile/12H321 Safari/600.1.4",
-    "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko",
-    "Mozilla/5.0 (iPad; CPU OS 7_1_2 like Mac OS X) AppleWebKit/537.51.2 (KHTML, like Gecko) Version/7.0 Mobile/11D257 Safari/9537.53",
-    "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.85 Safari/537.36"
-]
-
 
 class DuelClient:
     """
     Client for automating Duel.com betting operations using Playwright.
     Handles authentication, token extraction, and bet placement.
-    Uses normal browser launch with proxy integration.
+    Connects to a Kameleo Chroma browser profile via CDP WebSocket.
     """
     
-    def __init__(self, headless: bool = False, timeout: int = 30000, accounts_file: str = "accounts.txt"):
+    def __init__(self, timeout: int = 60000, accounts_file: str = "accounts.txt"):
         """
         Initialize the DuelClient.
         
         Args:
-            headless: Whether to run browser in headless mode
             timeout: Default timeout for page operations in milliseconds
             accounts_file: Path to the accounts.txt file containing account details
         """
-        self.headless = headless
         self.timeout = timeout
         self.accounts_file = accounts_file
         self.playwright = None
@@ -60,7 +43,7 @@ class DuelClient:
         self.base_url = "https://duel.com"
         self.api_base_url = "https://api-a-c7818b61-600.sptpub.com"
         self.token_refresh_timer: Optional[threading.Timer] = None
-        self.token_refresh_interval = 15 * 60  # 15 minutes in seconds
+        self.token_refresh_interval = 5 * 60  # 5 minutes in seconds
         self._token_refresh_lock = threading.Lock()
         self._is_running = True
         self.balance = 0
@@ -70,6 +53,7 @@ class DuelClient:
             ]
         self._token_refresh_event = threading.Event()  # Event to signal main thread to refresh token
         self._loop: Optional[asyncio.AbstractEventLoop] = None  # Event loop for async operations
+        self._page_lock: Optional[asyncio.Lock] = None  # Async lock to prevent concurrent Playwright page operations
         
         # Account information
         self.selected_account: Optional[Dict[str, str]] = None
@@ -78,7 +62,57 @@ class DuelClient:
         self.x_session_id = None
         self.x_ga_client_id = None
         self.x_ga_session_id = None
+        self.x_ua_model = None
+        self.x_ua_platform_version = None
+        self.kameleo_profile_id = None
+        self.user_agent = None
+        self.stake_amount = None
         
+    def _load_session_params(self, filepath: str = "input.txt"):
+        """
+        Read session parameters and Kameleo profile ID from a file.
+        Expected format (one key=value per line):
+            x_session_id=<value>
+            x_ga_client_id=<value>
+            x_ga_session_id=<value>
+            kameleo_profile_id=<value>
+            user_agent=<value>
+            x_ua_model=<value>
+            x_ua_platform_version=<value>
+            stake_amount=<value>
+            if stake_amount is not None:
+                self.stake_amount = int(stake_amount)
+            else:
+                self.stake_amount = 100
+        """
+        if not os.path.exists(filepath):
+            raise FileNotFoundError(f"Session params file not found: {filepath}")
+
+        params = {}
+        with open(filepath, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith('#'):
+                    continue
+                if '=' in line:
+                    key, value = line.split('=', 1)
+                    params[key.strip()] = value.strip()
+
+        required = ['x_session_id', 'x_ga_client_id', 'x_ga_session_id', 'kameleo_profile_id', 'user_agent', 'x_ua_model', 'x_ua_platform_version', 'stake_amount']
+        for key in required:
+            if key not in params or not params[key]:
+                raise ValueError(f"Missing or empty '{key}' in {filepath}")
+
+        self.x_session_id = params['x_session_id']
+        self.x_ga_client_id = params['x_ga_client_id']
+        self.x_ga_session_id = params['x_ga_session_id']
+        self.kameleo_profile_id = params['kameleo_profile_id']
+        self.user_agent = params['user_agent']
+        self.x_ua_model = params['x_ua_model']
+        self.x_ua_platform_version = params['x_ua_platform_version']
+        self.stake_amount = int(params['stake_amount'])
+        logger.info(f"Loaded session params from {filepath}")
+
     @staticmethod
     def read_accounts(accounts_file: str) -> Dict[str, Dict[str, str]]:
         """
@@ -105,7 +139,6 @@ class DuelClient:
                         continue
                     
                     # Format: account_name,username,password,proxy_host:proxy_port:proxy_user:proxy_pass
-                    # Split by comma - first 3 parts are account info, 4th part is proxy info
                     parts = line.split(',')
                     if len(parts) != 4:
                         logger.warning(f"Invalid format on line {line_num} (expected 4 comma-separated parts): {line}")
@@ -113,7 +146,7 @@ class DuelClient:
                     
                     account_name = parts[0].strip()
                     username = parts[1].strip()
-                    password = parts[2].strip()  # Can contain any characters including dashes
+                    password = parts[2].strip()
                     proxy_info = parts[3].strip()
                     
                     # Parse proxy information (format: host:port:user:pass)
@@ -182,112 +215,29 @@ class DuelClient:
                 print("\nSelection cancelled")
                 raise
     
-    async def _inject_anti_detection(self, page: Page):
-        """
-        Inject anti-detection scripts into the page to avoid bot detection.
-        This modifies navigator properties and removes automation indicators for Firefox.
-        """
-        anti_detection_script = """
-            // Firefox-specific fingerprint spoofing
-            Object.defineProperty(navigator, 'webdriver', {
-                get: () => undefined,
-            });
-            
-            Object.defineProperty(navigator, 'platform', {
-                get: () => 'Win32',
-            });
-            
-            Object.defineProperty(navigator, 'connection', {
-                get: () => ({
-                    downlink: 10,
-                    effectiveType: '4g',
-                    rtt: 50,
-                    saveData: false,
-                }),
-            });
-            
-            Object.defineProperty(navigator, 'hardwareConcurrency', {
-                get: () => 4,
-            });
-            
-            Object.defineProperty(navigator, 'deviceMemory', {
-                get: () => 8,
-            });
-            
-            
-        """
-        
-        try:
-            await page.add_init_script(anti_detection_script)
-            logger.debug("Firefox anti-detection script injected")
-        except Exception as e:
-            logger.warning(f"Failed to inject anti-detection script: {e}")
-    
     async def start(self):
-        """Start the Playwright Firefox browser instance with proxy and normal context."""
+        """Connect to a Kameleo Chroma browser profile via CDP WebSocket."""
         try:
             # Load and select account if not already selected
             if not self.selected_account:
                 accounts = self.read_accounts(self.accounts_file)
                 self.selected_account = self.select_account(accounts)
             
-            # Set up proxy configuration
-            proxy_host = self.selected_account['proxy_host']
-            proxy_port = self.selected_account['proxy_port']
-            proxy_user = self.selected_account['proxy_user']
-            proxy_pass = self.selected_account['proxy_pass']
+            kameleo_profile_id = self.kameleo_profile_id
+            kameleo_ws = f'ws://localhost:5050/playwright/{kameleo_profile_id}'
             
-            self.proxy_config = {
-                "server": f"http://{proxy_host}:{proxy_port}",
-                "username": proxy_user,
-                "password": proxy_pass
-            }
-            
-            logger.info(f"Starting Playwright Firefox browser with proxy: {proxy_host}:{proxy_port}")
-            print(f"Using proxy: {proxy_host}:{proxy_port}")
+            logger.info(f"Connecting to Kameleo Chroma profile: {kameleo_profile_id}")
+            print(f"Connecting to Kameleo profile: {kameleo_profile_id}")
             
             self.playwright = await async_playwright().start()
-            
-            # Firefox preferences for anti-detection
-            firefox_preferences = {
-                "privacy.resistFingerprinting": False,
-                "dom.webdriver.enabled": False,
-                "useAutomationExtension": False,
-                "browser.startup.homepage": "about:blank",
-                "devtools.jsonview.enabled": False,
-            }
-            
-            # Launch browser with proxy
-            self.browser = await self.playwright.firefox.launch(
-                headless=self.headless,
-                firefox_user_prefs=firefox_preferences,
-                args=['--start-maximized'],
-            )
-            
-            # Create context with proxy
-            self.context = await self.browser.new_context(
-                # viewport={'width': 1920, 'height': 1080},
-                no_viewport=True,
-                user_agent="Mozilla/5.0 (Windows NT 5.1; rv:40.0) Gecko/20100101 Firefox/40.0",
-                proxy=self.proxy_config,
-            )
-            
-            # Set up page event listener to inject anti-detection on new pages
-            def on_page(page: Page):
-                asyncio.create_task(self._inject_anti_detection(page))
-            
-            self.context.on("page", on_page)
-            
-            # Create a new page
+            self.browser = await self.playwright.chromium.connect_over_cdp(endpoint_url=kameleo_ws)
+            self.context = self.browser.contexts[0]
             self.page = await self.context.new_page()
             
-            # Inject anti-detection into the current page
-            await self._inject_anti_detection(self.page)
-            
-            logger.info("Firefox browser started successfully with proxy and anti-detection")
+            logger.info("Connected to Kameleo Chroma browser successfully")
             
         except Exception as e:
-            logger.error(f"Error starting Firefox browser: {e}", exc_info=True)
+            logger.error(f"Error connecting to Kameleo browser: {e}", exc_info=True)
             raise
     
     async def verify_proxy(self) -> bool:
@@ -310,8 +260,8 @@ class DuelClient:
             
             # Try multiple IP-checking services for reliability
             ip_check_urls = [
-                "https://api.ipify.org?format=json",
-                # "https://httpbin.org/ip",
+                # "https://api.ipify.org?format=json",
+                "https://httpbin.org/ip",
                 # "https://api.myip.com",
             ]
             
@@ -407,7 +357,7 @@ class DuelClient:
             return False
     
     async def stop(self):
-        """Stop the Playwright browser instance."""
+        """Stop the Playwright connection. Does not close the Kameleo browser profile."""
         try:
             # Stop token refresh timer
             self._is_running = False
@@ -415,16 +365,14 @@ class DuelClient:
                 self.token_refresh_timer.cancel()
                 self.token_refresh_timer = None
             
-            # Close context and browser
-            if self.context:
-                await self.context.close()
-            if self.browser:
-                await self.browser.close()
+            # Close only the page — Kameleo manages the browser/context lifecycle
+            if self.page:
+                await self.page.close()
             if self.playwright:
                 await self.playwright.stop()
-            logger.info("Browser stopped successfully")
+            logger.info("Playwright connection stopped (Kameleo profile remains active)")
         except Exception as e:
-            logger.error(f"Error stopping browser: {e}", exc_info=True)
+            logger.error(f"Error stopping Playwright connection: {e}", exc_info=True)
     
     def _refresh_token_periodically(self):
         """
@@ -464,6 +412,8 @@ class DuelClient:
         """
         Check if token refresh is needed and perform it if so.
         This method must be called from the async event loop.
+        Uses an async lock to prevent concurrent Playwright page operations
+        and retries up to 3 times on failure.
         
         Returns:
             True if token was refreshed, False otherwise
@@ -474,24 +424,36 @@ class DuelClient:
         # Clear the event
         self._token_refresh_event.clear()
         
-        try:
-            logger.info("Refreshing authorization token (triggered by timer)...")
-            
-            # Perform the actual token refresh
-            token = await self.extract_auth_token_from_request(request_url_pattern='my_bets/list')
-            
-            with self._token_refresh_lock:
+        # Initialize the async lock if not yet created (must be done inside a running loop)
+        if self._page_lock is None:
+            self._page_lock = asyncio.Lock()
+        
+        max_retries = 3
+        for attempt in range(1, max_retries + 1):
+            try:
+                async with self._page_lock:
+                    logger.info(f"Refreshing authorization token (attempt {attempt}/{max_retries})...")
+                    
+                    # Perform the actual token refresh
+                    token = await self.extract_auth_token_from_request(request_url_pattern='my_bets/list')
+                
                 if token:
-                    self.auth_token = token
+                    with self._token_refresh_lock:
+                        self.auth_token = token
                     logger.info("Authorization token refreshed successfully")
                     return True
                 else:
-                    logger.warning("Failed to refresh authorization token, keeping existing token")
-                    return False
-                    
-        except Exception as e:
-            logger.error(f"Error refreshing token: {e}", exc_info=True)
-            return False
+                    logger.warning(f"Token refresh attempt {attempt}/{max_retries} failed - no token captured")
+                    if attempt < max_retries:
+                        await asyncio.sleep(2)
+                        
+            except Exception as e:
+                logger.error(f"Error refreshing token (attempt {attempt}/{max_retries}): {e}", exc_info=True)
+                if attempt < max_retries:
+                    await asyncio.sleep(2)
+        
+        logger.error("All token refresh attempts failed, keeping existing token")
+        return False
     
     def start_token_refresh(self):
         """
@@ -935,10 +897,15 @@ class DuelClient:
         if not token:
             raise RuntimeError("No authorization token available. Please login first.")
         
-        # Update balance before placing bet
-        balance_updated = await self.update_balance()
-        if not balance_updated:
-            logger.warning("Failed to update balance, using existing balance value")
+        # Initialize the async lock if not yet created (must be done inside a running loop)
+        if self._page_lock is None:
+            self._page_lock = asyncio.Lock()
+        
+        # Acquire page lock for Playwright operations (update_balance navigates the shared page)
+        async with self._page_lock:
+            balance_updated = await self.update_balance()
+            if not balance_updated:
+                logger.warning("Failed to update balance, using existing balance value")
         
         if self.balance <= 0:
             raise RuntimeError(f"Invalid balance: ${self.balance}. Cannot place bet.")
@@ -950,7 +917,8 @@ class DuelClient:
         selection_id = ''
         specifier = ''
         
-        logger.info(f"Placing bet for event_id: {duel_event_id}, market_name: {market_name}, selection: {selection}, hdp: {hdp}, odds: {odds}, balance: ${self.balance:.2f}")
+        
+        
         
         if market_name == "3-Way Result" or (market_name == "ML" and sport.lower() == 'soccer'):
             market_id = "1"
@@ -964,7 +932,7 @@ class DuelClient:
         elif market_name == "ML":
             if sport.lower() in ['ice hockey']:
                 market_id = "406"
-            elif sport.lower() in ["volleyball", "tennis"]:
+            elif sport.lower() in ["volleyball", "tennis", 'esports']:
                 market_id = "186"
             else:
                 market_id = "219"
@@ -975,14 +943,24 @@ class DuelClient:
                 selection_id = "5"
             
         elif market_name == "Spread":
-            market_id = "16"
-            specifier = f"hcp={hdp}"
+            if sport.lower() == 'basketball':
+                market_id = '223'
+            else:
+                market_id = "16"
+            
             if selection == "home":
                 selection_id = "1714"
+                
             elif selection == "away":
                 selection_id = "1715"
+                hdp = -1 * hdp
+            specifier = f"hcp={hdp}"
+
         elif market_name == "Totals":
-            market_id = "18"
+            if sport.lower() == 'basketball':
+                market_id = '225'
+            else:
+                market_id = "18"
             specifier = f'total={hdp}'
             if selection == "over":
                 selection_id = "12"
@@ -1001,14 +979,30 @@ class DuelClient:
         bet_request_id = f"{duel_event_id}-{market_id}-{specifier}-{selection_id}"
         
         # Calculate stake as 1.5% of balance
-        stake = self.balance * 0.02
-        stake = round(stake)
-        # stake = 100
+        # stake = self.balance * 0.02
+        # stake = round(stake)
+        stake = self.stake_amount if self.stake_amount is not None else 100
         
         if stake <= 0:
             raise RuntimeError(f"Calculated stake is invalid: ${stake}. Balance may be too low.")
+
+        max_stake = self.check_max_stake(duel_event_id=duel_event_id,
+                                                        sport=sport,
+                                                        market_name=market_name,
+                                                        selection=selection,
+                                                        hdp=hdp,
+                                                        odds=odds)
+        logger.info(f"Max stake: {max_stake}")
+        print(f"Max stake: {max_stake}")
+
+        if float(max_stake) < 10:
+            return f"Max stake limit reached"
+        elif float(max_stake) < stake:
+            stake = math.floor(float(max_stake))
+            
         
         logger.info(f"Calculated stake: ${stake:.2f} (1.5% of ${self.balance:.2f})")
+        logger.info(f"Placing bet for event_id: {duel_event_id}, market_name: {market_name}, selection: {selection}, hdp: {hdp}, odds: {odds}, balance: ${self.balance:.2f}")
         
         payload = [
             {
@@ -1031,7 +1025,7 @@ class DuelClient:
                             "page": "/:sportSlug/:categorySlug/:tournamentSlug/:eventSlugAndId",
                             "section": "",
                             "extra": {
-                                "market": "ALL",
+                                "market": "Event Plate",
                                 "timeFilter": "",
                                 "banner_type": "",
                                 "tab": ""
@@ -1048,7 +1042,7 @@ class DuelClient:
         logger.info(f"Bet payload: {payload}")
         
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
+            "User-Agent": self.user_agent,
             "Accept": "*/*",
             "Accept-Language": "en-US,en;q=0.5",
             "Accept-Encoding": "gzip, deflate, br, zstd",
@@ -1058,6 +1052,9 @@ class DuelClient:
             "X-Session-Id": self.x_session_id,
             "X-GA-Client-Id": self.x_ga_client_id,
             "X-GA-Session-Id": self.x_ga_session_id,
+            "x-ua-full-version-list": '"Not:A-Brand";v="99.0.0.0", "Google Chrome";v="145.0.7632.75", "Chromium";v="145.0.7632.75"',
+            "x-ua-model":self.x_ua_model,
+            "x-ua-platform-version":self.x_ua_platform_version,
             "Origin": "https://duel.com",
             "Connection": "keep-alive",
             "Sec-Fetch-Dest": "empty",
@@ -1074,6 +1071,177 @@ class DuelClient:
             logger.info(f"Bet Response: {result}")
             print(f"Bet Response: {result}")
             return result
+        except requests.RequestException as e:
+            logger.error(f"Error placing bet: {e}")
+            if hasattr(e, 'response') and e.response is not None:
+                logger.error(f"Response: {e.response.text}")
+            raise
+
+    def check_max_stake(self,
+        duel_event_id: str,
+        sport: str,
+        market_name: str,
+        selection: str,
+        hdp: Optional[float],
+        odds: float
+    ) -> Dict[str, Any]:
+        """
+        Place a bet on Duel.com.
+        
+        Args:
+            duel_event_id: The Duel event ID
+            market_name: Market name (e.g., 'ML', 'Totals', 'Spread')
+            selection: Selection (e.g., 'home', 'away', 'over', 'under')
+            hdp: Handicap/totals line (optional)
+            odds: The odds for the bet
+            
+        Returns:
+            Response dictionary from the API
+        """
+        # Ensure we have a token
+        token = self.get_auth_token()
+        if not token:
+            raise RuntimeError("No authorization token available. Please login first.")
+        
+        # Initialize the async lock if not yet created (must be done inside a running loop)
+        # if self._page_lock is None:
+        #     self._page_lock = asyncio.Lock()
+        
+        # Acquire page lock for Playwright operations (update_balance navigates the shared page)
+        
+        if self.balance <= 0:
+            raise RuntimeError(f"Invalid balance: ${self.balance}. Cannot place bet.")
+        
+        # url = f"{self.api_base_url}/api/v2/coupon/brand/2482975601191952386/bet/place" 
+        url = "https://api-a-c7818b61-600.sptpub.com/api/v1/coupon/max"
+        
+        # Map market and selection to IDs
+        market_id = ''
+        selection_id = ''
+        specifier = ''
+        
+        
+        logger.info(f"Checking Max Stake for event_id: {duel_event_id}, market_name: {market_name}, selection: {selection}, hdp: {hdp}, odds: {odds}, balance: ${self.balance:.2f}")
+        
+        if market_name == "3-Way Result" or (market_name == "ML" and sport.lower() == 'soccer'):
+            market_id = "1"
+            if selection == "home":
+                selection_id = "1"
+            elif selection == "away":
+                selection_id = "3"
+            elif selection == "draw":
+                selection_id = "2"
+
+        elif market_name == "ML":
+            if sport.lower() in ['ice hockey']:
+                market_id = "406"
+            elif sport.lower() in ["volleyball", "tennis", 'esports']:
+                market_id = "186"
+            else:
+                market_id = "219"
+
+            if selection == "home":
+                selection_id = "4"
+            elif selection == "away":
+                selection_id = "5"
+            
+        elif market_name == "Spread":
+            if sport.lower() == 'basketball':
+                market_id = '223'
+            else:
+                market_id = "16"
+            
+            if selection == "home":
+                selection_id = "1714"
+                
+            elif selection == "away":
+                selection_id = "1715"
+                
+            specifier = f"hcp={hdp}"
+
+        elif market_name == "Totals":
+            if sport.lower() == 'basketball':
+                market_id = '225'
+            else:
+                market_id = "18"
+            specifier = f'total={hdp}'
+            if selection == "over":
+                selection_id = "12"
+            elif selection == "under":
+                selection_id = "13"
+        elif market_name == "Totals HT":
+            market_id = '68'
+            specifier = f'total={hdp}'
+            if selection == "over":
+                selection_id = "12"
+            elif selection == "under":
+                selection_id = "13"
+        else:
+            raise ValueError(f"Unsupported market: {market_name}")
+        
+        bet_request_id = f"{duel_event_id}-{market_id}-{specifier}-{selection_id}"
+        
+        # Calculate stake as 1.5% of balance
+        # stake = self.balance * 0.02
+        # stake = round(stake)
+        # stake = 100
+        
+        
+        payload = {
+            "type": "1/1",
+            "sum": "5",
+            "k": str(odds),
+            "global_id": None,
+            "bonus_id": None,
+            "bet_request_id": bet_request_id,
+            "odds_change": "higher",
+            "selections": [
+                {
+                    "event_id": duel_event_id,
+                    "market_id": market_id,
+                    "specifiers": specifier,
+                    "outcome_id": selection_id,
+                    "k": str(odds),
+                    "source": {
+                        "layout": "tile",
+                        "page": "/:sportSlugAndId",
+                        "section": "Promo",
+                        "extra": {
+                            "market": "sport_page",
+                            "timeFilter": "",
+                            "banner_type": "",
+                            "tab": ""
+                        }
+                    },
+                    "promo_id": None,
+                    "bonus_id": None,
+                    "timestamp": 1771505164011
+                }
+            ]
+        }
+        headers = {
+            "accept": "*/*",
+            "accept-language": "en-US,en;q=0.7",
+            "authorization": token,
+            "content-type": "application/json",
+            "origin": "https://duel.com",
+            "priority": "u=1, i",
+            "referer": "https://duel.com/",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "sec-gpc": "1",
+            "user-agent": self.user_agent,
+        }
+        logger.info(f"Max_Stake Payload: {payload}")
+        logger.info(f"Max_Stake Headers: {headers}")
+        try:
+            response = requests.post(url, json=payload, headers=headers)
+            response.raise_for_status()
+            result = response.json()
+            logger.info(f"Max Stake Response: {result}")
+            max_stake = result.get('max_bet')
+            return max_stake
         except requests.RequestException as e:
             logger.error(f"Error placing bet: {e}")
             if hasattr(e, 'response') and e.response is not None:
@@ -1150,7 +1318,7 @@ class DuelClient:
             "sec-fetch-dest": "empty",
             "sec-fetch-mode": "cors",
             "sec-fetch-site": "same-origin",
-            "user-agent": "Mozilla/5.0 (Windows NT 5.1; rv:40.0) Gecko/20100101 Firefox/40.0"
+            "user-agent": self.user_agent,
         }
         
         try:
@@ -1167,6 +1335,8 @@ class DuelClient:
         except requests.RequestException as e:
             logger.error(f"Error getting bet odds: {e}")
             return None, self.balance
+
+    
     
     async def initialize(self):
         """
@@ -1180,30 +1350,20 @@ class DuelClient:
         try:
             logger.info("Initializing DuelClient...")
             
+            # Load session params (includes kameleo_profile_id) before connecting
+            self._load_session_params()
+            
             # Load and select account if not already selected
             if not self.selected_account:
                 accounts = self.read_accounts(self.accounts_file)
                 self.selected_account = self.select_account(accounts)
             
-            # Start browser with proxy
+            # Connect to Kameleo browser
             await self.start()
-            
-            # Verify proxy connection before proceeding
-            proxy_verified = await self.verify_proxy()
-            if not proxy_verified:
-                logger.warning("Proxy verification failed, but continuing with login...")
-                user_continue = input("\nProxy verification failed. Continue anyway? (y/n): ").strip().lower()
-                if user_continue != 'y':
-                    logger.info("User chose to abort after proxy verification failure")
-                    return False
             
             # Login with selected account credentials
             logger.info("Attempting to login with selected account...")
-            # await self.login()
-            await self.page.goto("https://duel.com", wait_until="domcontentloaded")
-            self.x_session_id = await ainput("Enter X-Session-Id: ")
-            self.x_ga_client_id = await ainput("Enter X-GA-Client-Id: ")
-            self.x_ga_session_id = await ainput("Enter X-GA-Session-Id: ")
+            await self.page.goto("https://duel.com", wait_until="domcontentloaded", timeout=60000)
 
             await ainput("Login manually and press Enter to continue...")
             

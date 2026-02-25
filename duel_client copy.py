@@ -74,10 +74,6 @@ class DuelClient:
         # Account information
         self.selected_account: Optional[Dict[str, str]] = None
         self.proxy_config: Optional[Dict[str, str]] = None
-
-        self.x_session_id = None
-        self.x_ga_client_id = None
-        self.x_ga_session_id = None
         
     @staticmethod
     def read_accounts(accounts_file: str) -> Dict[str, Dict[str, str]]:
@@ -1002,7 +998,7 @@ class DuelClient:
         
         # Calculate stake as 1.5% of balance
         stake = self.balance * 0.02
-        stake = round(stake)
+        stake = round(stake, 2)
         # stake = 100
         
         if stake <= 0:
@@ -1048,23 +1044,16 @@ class DuelClient:
         logger.info(f"Bet payload: {payload}")
         
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
-            "Accept": "*/*",
-            "Accept-Language": "en-US,en;q=0.5",
-            "Accept-Encoding": "gzip, deflate, br, zstd",
-            "Referer": "https://duel.com/",
-            "Content-Type": "application/json",
-            "Authorization": token,
-            "X-Session-Id": self.x_session_id,
-            "X-GA-Client-Id": self.x_ga_client_id,
-            "X-GA-Session-Id": self.x_ga_session_id,
-            "Origin": "https://duel.com",
-            "Connection": "keep-alive",
-            "Sec-Fetch-Dest": "empty",
-            "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "cross-site",
-            "Priority": "u=0",
-            "TE": "trailers"
+            "accept": "*/*",
+            "accept-language": "en-US,en;q=0.9",
+            "authorization": token,
+            "content-type": "application/json",
+            "origin": "https://duel.com",
+            "referer": "https://duel.com/",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin",
+            "user-agent": "Mozilla/5.0 (Windows NT 5.1; rv:40.0) Gecko/20100101 Firefox/40.0"
         }
         
         try:
@@ -1201,10 +1190,6 @@ class DuelClient:
             logger.info("Attempting to login with selected account...")
             # await self.login()
             await self.page.goto("https://duel.com", wait_until="domcontentloaded")
-            self.x_session_id = await ainput("Enter X-Session-Id: ")
-            self.x_ga_client_id = await ainput("Enter X-GA-Client-Id: ")
-            self.x_ga_session_id = await ainput("Enter X-GA-Session-Id: ")
-
             await ainput("Login manually and press Enter to continue...")
             
             # Verify login was successful
