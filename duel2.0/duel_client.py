@@ -25,7 +25,7 @@ class DuelClient:
     Connects to a Kameleo Chroma browser profile via CDP WebSocket.
     """
     
-    def __init__(self, timeout: int = 60000, accounts_file: str = "accounts.txt"):
+    def __init__(self, timeout: int = 120000, accounts_file: str = "accounts.txt"):
         """
         Initialize the DuelClient.
         
@@ -694,13 +694,15 @@ class DuelClient:
             logger.error(f"Error navigating to My Bets: {e}", exc_info=True)
             raise
     
-    async def extract_auth_token_from_request(self, request_url_pattern: str = 'my_bets/list') -> Optional[str]:
+    async def extract_auth_token_from_request(self, request_url_pattern: str = 'my_bets/list', timeout_seconds: int = 120) -> Optional[str]:
         """
         Set up request interception to capture authorization token from API requests.
         Then click one of the buttons on My Bets page to trigger the API call.
+        Retries button clicks until the token is captured or the timeout is reached.
         
         Args:
             request_url_pattern: Optional pattern to match specific API endpoint
+            timeout_seconds: Max time in seconds to wait for token capture (default 120s / 2 minutes)
             
         Returns:
             Authorization token if found, None otherwise
@@ -709,7 +711,7 @@ class DuelClient:
             if not self.page:
                 raise RuntimeError("Browser not started. Call start() first.")
             
-            logger.info("Setting up request interception to capture auth token...")
+            logger.info(f"Setting up request interception to capture auth token (timeout: {timeout_seconds}s)...")
             
             captured_token = None
             request_count = 0
@@ -717,23 +719,16 @@ class DuelClient:
             def handle_request(request):
                 nonlocal captured_token, request_count
                 request_count += 1
-                # Check if this is an API request that contains auth token
                 headers = request.headers
                 url = request.url
                 
-                # Look for authorization header
                 if 'authorization' in headers:
                     token = headers['authorization']
-                    # Prefer my_bets/list endpoint, but accept any API endpoint
                     if request_url_pattern:
                         if request_url_pattern in url:
                             captured_token = token
                             logger.info(f"Captured auth token from matching endpoint: {url}")
                             logger.info(f"Captured auth token: {token}")
-                    # elif 'api' in url.lower() and not captured_token:
-                    #     # Capture any API token as fallback
-                    #     captured_token = token
-                    #     logger.info(f"Captured auth token from API endpoint: {url}")
             
             # Set up request listener BEFORE navigating
             self.page.on("request", handle_request)
@@ -742,49 +737,51 @@ class DuelClient:
             current_url = self.page.url
             if "bets" not in current_url.lower():
                 logger.info("Navigating to My Bets page to capture token...")
-                # Navigate directly to trigger initial requests
                 await self.navigate_to_my_bets()
-                await asyncio.sleep(5)
+                await asyncio.sleep(8)
             
-            # Try to find and click one of the filter buttons that triggers API calls
-            # These buttons typically filter bets by status (Active, Settled, Pending)
-            # Try multiple button selectors and click the first 3 buttons found
+            # Keep retrying button clicks until token is captured or timeout is reached
+            start_time = time.time()
+            attempt = 0
             
-            
-            button_clicked = False
-            buttons_clicked = 0
-            max_buttons_to_click = 2  # Click up to 3 buttons as user mentioned
-            
-            for selector in self.target_button_selectors:
-                try:
-                    buttons = await self.page.query_selector_all(selector)
-                    if buttons and len(buttons) > 0:
-                        # Click up to 3 buttons to trigger API calls
-                        for i, button in enumerate(buttons[:max_buttons_to_click]):
-                            if buttons_clicked >= max_buttons_to_click:
+            while not captured_token and (time.time() - start_time) < timeout_seconds:
+                attempt += 1
+                elapsed = int(time.time() - start_time)
+                logger.info(f"Token capture attempt {attempt} ({elapsed}s / {timeout_seconds}s elapsed)...")
+                
+                button_clicked = False
+                buttons_clicked = 0
+                max_buttons_to_click = 2
+                
+                for selector in self.target_button_selectors:
+                    if captured_token:
+                        break
+                    try:
+                        buttons = await self.page.query_selector_all(selector)
+                        if buttons and len(buttons) > 0:
+                            for i, button in enumerate(buttons[:max_buttons_to_click]):
+                                if buttons_clicked >= max_buttons_to_click or captured_token:
+                                    break
+                                try:
+                                    await button.click(timeout=15000)
+                                    buttons_clicked += 1
+                                    button_clicked = True
+                                    logger.info(f"Clicked filter button {buttons_clicked} with selector: {selector}")
+                                    await asyncio.sleep(3)
+                                except Exception as e:
+                                    logger.debug(f"Could not click button {i}: {e}")
+                                    continue
+                            if button_clicked:
                                 break
-                            try:
-                                await button.click(timeout=5000)
-                                buttons_clicked += 1
-                                button_clicked = True
-                                logger.info(f"Clicked filter button {buttons_clicked} with selector: {selector}")
-                                
-                                await asyncio.sleep(1.5)  # Wait for API request to complete
-                            except Exception as e:
-                                logger.debug(f"Could not click button {i}: {e}")
-                                continue
-                        if button_clicked:
-                            break
-                except Exception as e:
-                    logger.error(f"Could not find buttons with selector {selector}: {e}")
-                    continue
+                    except Exception as e:
+                        logger.error(f"Could not find buttons with selector {selector}: {e}")
+                        continue
 
-            self.target_button_selectors.reverse()
-            logger.info(f"Reversed button selectors: {self.target_button_selectors}")
-
-            
-            # Wait a bit more for any pending requests to complete
-            await asyncio.sleep(2)
+                self.target_button_selectors.reverse()
+                
+                if not captured_token:
+                    # Wait before retrying
+                    await asyncio.sleep(5)
             
             # Remove the listener
             try:
@@ -797,10 +794,16 @@ class DuelClient:
             if captured_token:
                 self.auth_token = captured_token
                 logger.info("Successfully captured authorization token")
+                print("\n" + "=" * 60)
+                print(">>> AUTH TOKEN CAPTURED SUCCESSFULLY <<<")
+                print("=" * 60 + "\n")
                 return captured_token
             else:
-                logger.warning("No authorization token captured from requests. You may need to manually interact with the page.")
-                # Try to get token from page context or cookies as fallback
+                logger.error("Failed to capture authorization token within timeout")
+                print("\n" + "=" * 60)
+                print(">>> FAILED TO CAPTURE AUTH TOKEN <<<")
+                print(f">>> Timed out after {timeout_seconds} seconds")
+                print("=" * 60 + "\n")
                 return None
                 
         except Exception as e:
